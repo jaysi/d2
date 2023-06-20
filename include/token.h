@@ -13,6 +13,8 @@
 #define d2_array "[]"
 #define d2_chain '@'
 #define d2_chain_str "@"
+#define d2_pack1 '"'
+#define d2_pack2 '\''
 
 typedef enum d2_toktype_enum {
 	TOKTYPE_EMPTY,
@@ -207,5 +209,16 @@ struct d2_tok {
 	
 	struct d2_tok* 	next, *prefix_next;
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+char* __d2_tokenize(char* start, char delim[], char esc, char pack1, char pack2);
+size_t __d2_count_token(char* start, char delim[], char esc, char pack1, char pack2);
+#define d2_tok(exp) MACRO( __d2_tokenize(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2) )
+#define d2_ntok(exp) MACRO( __d2_count_token(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2) )
+#ifdef __cplusplus
+}
+#endif
 
 #endif //D2_TOKEN_H

@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
 
 	d2_load_conf(&conf, NULL);
 
-	d2_init(&h, &conf);
+	d2_init(&h, &conf);	
 
 	if(argc > 1){
 		

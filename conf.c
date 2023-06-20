@@ -1,6 +1,6 @@
 #include "include/conf.h"
 
-#include "lib13.h"
+#include "error13.h"
 
 struct d2_conf def_conf = {
     DEF_EXP_BUFSIZE,
