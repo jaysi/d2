@@ -1,26 +1,46 @@
-LIBS = -lpthread -lm
-CFLAGS = -Wall
-release: CFLAGS += -O2
-debug: CFLAGS += -g
-INCLUDE_PATH = /home/jc/0-zdfs.cl/0-comp.cl/0-dev.cl/0-prj.cl/lib13/include;./include
+LINKLIBS = -lpthread -lm -l13
+CFLAGS = -Wall -Winline -pedantic
+release: CFLAGS += -O2 -DNDEBUG -L$(HOME)/prj/lib13/release
+debug: CFLAGS += -g -L$(HOME)/prj/lib13/debug
+INCLUDE_PATH = -I$(HOME)/prj/lib13/include -I$(HOME)/prj/d2/include
+LIB_PATH = 
+CFLAGS += $(INCLUDE_PATH)
 SRC = $(wildcard *.c)
-MV = mv
-STRIP = strip
-RM = rm -rf
+OBJ = $(SRC:%.c=%.o)
+MV = @mv
+STRIP = @strip
+RM = @rm -rf
+TAR = tar -cf
+ZIP = bzip2
+MKDIR = mkdir
 
+all: debug
 
+d2: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LINKLIBS)
+	$(MV) *.o obj/
 
-d2: $(SRC)
-	$(CC) -o $@ $^ $(CFLAGS) -I$(INCLUDE_PATH) $(LIBS)
-	$(MV) *.o obj/	
-
-release: d2	
+release: d2
 	$(STRIP) d2
-	$(MV) d2 release/	
+	$(MV) d2 release/
+	$(info *** put executable in release/ ; 'make clean' before 'make debug' ***)
 
 debug: d2
 	$(MV) d2 debug/
+	$(info *** put executable in debug/ ; 'make clean' before 'make release' ***)
 
 clean:
-	$(RM) obj/*.o release/* debug/* d2
+	$(RM) *.o obj/* *.*~ *~
+
+cleanall: clean
+	$(RM) release/* debug/*
+
+backup:
+	$(TAR) d2.tar *.c makefile include/
+	$(ZIP) d2.tar
+
+init:
+	$(MKDIR) release debug obj
+
+
 
