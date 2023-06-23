@@ -13,27 +13,38 @@
 #define MACRO(A) do { A; } while(0)
 #endif
 
-struct expression{
+struct d2_exp {
 
-    char flags;
-    char* infix;
+	char flags;
+	char* infixbuf;
 
-    struct d2_tok* infix_tok_first, *prefix_tok_first;
-
+	struct d2_tok* infix_tok_first, *infix_tok_last;
+	struct d2_exp* next, *prev;
 };
 
-struct d2_context {
+struct d2_fn {
 
-	//expression buffer
 	size_t expbufsize;
 	char* expbuf;
+		
+	struct d2_tok* ret_tok;
 
-	//last answer array
-	fnum_t* last_ans;
+	struct d2_var* varlist_first;
 	
-	struct d2_tok* toklist_first;
+	struct d2_exp* explist_first, *exp;	
+};
+
+struct d2_context {	
 	
-	struct d2_context* next;
+    size_t bufsize;
+    char* buf;
+
+	//function table
+	size_t nfn;
+	struct d2_func* fntab, *fn;
+
+	struct d2_context* next, *prev;
+
 };
 
 struct d2_handle {

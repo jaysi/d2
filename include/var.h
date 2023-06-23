@@ -15,15 +15,12 @@
 #define CLIPVARDESC	"clipboard contents"
 
 struct d2_var{
-    char type;
-    char flags;
-    char* name;
-    size_t nval;
-    fnum_t* val;
-    char* exp;
-    char* desc;    
-    struct d2_var* next;
-    struct d2_tok* pre;
+	char flags;
+	char* name;
+	char* desc;
+	size_t nrec;
+	struct d2_rec* rectab;//all vars are arrays!
+	struct d2_var* next;
 };
 
 #endif //D2_VAR_H

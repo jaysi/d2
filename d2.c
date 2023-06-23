@@ -4,7 +4,7 @@
 #include "lib13.h"
 
 e13_t d2_init(struct d2_handle* h, struct d2_conf* conf){
-	d2_init_handle_locks(h);
+	d2_init_handle_locks(h);	
 	return E13_OK;
 }
 

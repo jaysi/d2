@@ -24,9 +24,9 @@
 #define MAXNUMLEN 21
 
 struct d2_conf {
-    size_t exp_bufsize;
-    size_t tok_bufsize;
-    size_t nhistory;
+	size_t exp_bufsize;
+	size_t tok_bufsize;
+	size_t nhistory;
 };
 
 #ifdef __cplusplus

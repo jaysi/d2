@@ -69,30 +69,30 @@
 
 //ABOUT MSGS
 #define MSG_ABOUT_HELP      HELPINFO_ICON"\n[ Double, the programmable command line calculator. ]"\
-                            PARAEND
+							PARAEND
 
 #define MSG_ABOUT_VER       NOP_ICON"[ engine version: "SRCVER", ui version: "UIVER" ]"\
-                            PARAEND
+							PARAEND
 
 #define MSG_ABOUT_NOTES NOP_ICON"* The purpose was, creating a program to make some engineering\n"\
-                        "  tasks ( which may need some simple scripting and automation )\n"\
-                        "  easier, it helped me lots while writing invioces; I hope it\n"\
-                        "  becomes useful for others with similar needs.\n"\
-                        "* Try \"help item\" for a quick help on item.\n"\
-                        "* Be careful using EXPERIMENTAL features, they are\n"\
-                        "  still under developement and better to be avoided\n"\
-                        "  while being tested, see quick help of the functions."\
-                        PARAEND
+						"  tasks ( which may need some simple scripting and automation )\n"\
+						"  easier, it helped me lots while writing invioces; I hope it\n"\
+						"  becomes useful for others with similar needs.\n"\
+						"* Try \"help item\" for a quick help on item.\n"\
+						"* Be careful using EXPERIMENTAL features, they are\n"\
+						"  still under developement and better to be avoided\n"\
+						"  while being tested, see quick help of the functions."\
+						PARAEND
 
 #define MSG_ABOUT_ME     HELPINFO_ICON"[ by:    %s                        ]\n"\
-                         "[ email: %s                    ]\n"\
-                         "[ web:   %s ]"\
-                         PARAEND
+						 "[ email: %s                    ]\n"\
+						 "[ web:   %s ]"\
+						 PARAEND
 
 #define MSG_ABOUT_LIC   NOP_ICON"* The current version of this software is free for\n"\
-                        "  commercial and non-commercial use,\n"\
-                        "  this may change in future versions, however!"\
-                        PARAEND
+						"  commercial and non-commercial use,\n"\
+						"  this may change in future versions, however!"\
+						PARAEND
 
 
 #define NOVAREXP ""         

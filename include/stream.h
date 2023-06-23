@@ -12,7 +12,7 @@
 #define print(h, fmt, ...)
 #else //use CLI
 #define print(h, icon, fmt, ...)  MACRO(	d2_lock_stream(h);\
-                                            fprintf(h->fout, ICON);\
+											fprintf(h->fout, ICON);\
 											fprintf(h->fout, fmt, ##__VA_ARGS__);\
 											fflush(h->fout);\
 											d2_unlock_stream(h);	)
