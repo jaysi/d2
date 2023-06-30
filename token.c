@@ -1,46 +1,80 @@
 #include "lib13.h"
 #include "token.h"
 
+#define TEST_TOKENIZE
+
+
+/*
+    source code shape:    
+    block;
+        exp;
+        block;
+            exp;
+        label:
+*/
+
 char* d2_tok_form[] = { "", "(", ")", "[", "]", "++", "--", "!", "~", "*", "/", "%",
                         "<<", ">>", "<", "<=", ">", ">=", "==", "!=", "&", "^", "|",
                         "&&", "||", "?:", "=", "+=", "-=", "*=", "/=", "%=", "<<=",
-                        ">>=", "&=", "^=", "|=", ",", NULL};
+                        ">>=", "&=", "^=", "|=", ",", ";", "{", "}", "@",
+                        "if", "else", "else if", "switch", "case", "default",
+                        "do", "while", "break", "continue",
+                        "for", "goto", "return", ":", 
+                        "thread", "exit",
+                        "sys",
+                        "print",
+                        NULL};
 
-char* __d2_token(char* start, char delim[], char esc, char pack1, char pack2){
+char* __d2_token(   char* start,
+                    char delim[],
+                    char esc,
+                    char pack1,
+                    char pack2
+                ){
 		char* end, *d = delim;
 		char pack = 0;
 		end = start;
-		while(*end){
-		if(*end == esc) {end+=2; continue;}
+		while(*end){            
+		    if(*end == esc) {end+=2; continue;}
 				if(!pack){
 						d = delim;
 						while(*d){
-								if(*d == *end){
-										if(*end == pack1 || *end == pack2){
-												pack = *end;
-												break;
-										}
-										return start==end?end:end-1;
+								if(*d == *end){                                    
+									if(*end == pack1 || *end == pack2){
+											pack = *end;
+											break;
+									}
+                                    //will take care of isspace() in the calling function
+                                    //while(isspace(*end)) end++;//skip whitespaces
+									return start==end?end:end-1;
 								}
-								if(pack) continue;
+								if(pack) break;
 								d++;
 						}
-				} else { //if(!pack)
-					if(*end == pack) return end;
+				} else {
+					if(*end == pack){
+                        return end;
+                    }
 				}
 				end++;
 		}
 		return end;
 }
 
-size_t __d2_count_token(char* start, char delim[], char esc, char pack1, char pack2){
+
+size_t __d2_estimate_ntokens(char* start,
+                        char delim[],
+                        char esc,
+                        char pack1,
+                        char pack2
+                        ){
 		char* end, *d = delim;
 		char pack = 0;
 		size_t cnt = 0UL;
 		end = start;
 		while(*end){
-				if(*end == esc) {end+=2; continue;}
-				if(!pack){
+				if(*end == esc) {end+=2; continue;}                
+				if(!pack){                        
 						d = delim;
 						while(*d){
 								if(*d == *end){
@@ -63,43 +97,76 @@ size_t __d2_count_token(char* start, char delim[], char esc, char pack1, char pa
 
 /*    
     phase 1:
-        split an entry to expressions, look for ; or :
+        preprocess
     phase 2:
-        tokenize
+        split buffer to functions, look for ; or :
     phase 3:
-        lex
+        split a function to expressions
     phase 4:
+        tokenize
+    phase 5:
+        lex
+    phase 6:
         parse 
 */
 
 e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
     
-    *toklist_first = (struct d2_tok*)malloc(sizeof struct d2_tok);
-    if(!(*toklist_first)) return e13_error(E13_NOMEM);
-    
-        
+    struct d2_tok* toks, *tok;
+    size_t ntok;
+    char* bufdata;
+    size_t bufdatasize;
+    char* start, *end;
 
-    return E13_OK;
-}
+    ntok = __d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
 
-#ifdef TEST_TOKEN
+    toks = (struct d2_tok*)malloc(ntok*sizeof struct d2_toks);
+    if(!toks) return e13_error(E13_NOMEM);
 
-int test_tokenize(){
-	char exp[100], tk[20], *s, *e;
-	printf("exp: ");
-	scanf("%s", exp);
-	s = exp;
-	e = s;
-	while(*e){
-		e = __d2_tokenize(s, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
-		if(*e){
-			memcpy(tk, s, e-s+1);
+    bufdatasize = strlen(buf) + ntok + 1;
+    bufdata = (char*)malloc(bufdatasize);
+    if(!bufdata) return e13_error(E13_NOMEM);
+
+    *toklist_first = NULL;
+    tok = toks;
+
+    start = buf;
+    end = start;
+
+	while(*end){
+		end = __d2_tokenize(start, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
+		if(*end && !isspace(*end)){
+			memcpy(bufdata + end - start, start, end-start+1);
 			tk[e-s+1] = '\0';
 			printf("-> (%i) %s\n", (int)tk[0],tk);
 			s = e+1;//out of bounds
 		}
 	}
-	printf("exp: %p, s: %p, e: %p, diff: %tp, sizeof(mem): %u\n", exp, s, e, (ptrdiff_t)(e-exp), __d2_count_token(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2));
+
+    return E13_OK;
+}
+
+
+#ifdef TEST_TOKENIZE
+
+int test_tokenize(){
+	char exp[100], tk[20], *s, *e;
+	printf("exp: ");
+	gets(exp);
+	s = exp;
+	e = s;
+	while(*e){
+        //printf("start= %s\n", s);
+		e = __d2_token(s, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
+        //printf("end= %s\n", e);
+        if(!isspace(*e) && *e){
+			memcpy(tk, s, e-s+1);
+			tk[e-s+1] = '\0';
+			printf("-> (%i) %s\n", (int)tk[0],tk);			
+		}//if(*e)
+        s = e+1;//out of bounds
+	}
+	printf("exp: %p, s: %p, e: %p, diff: %tp, sizeof(mem): %u\n", exp, s, e, (ptrdiff_t)(e-exp), __d2_estimate_ntokens(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2));
 	return 0;
 }
 

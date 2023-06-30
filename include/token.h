@@ -4,10 +4,12 @@
 #include "type13.h"
 #include "types.h"
 
+#define WHITESPACES " \t\"\'\n\r\f"
 #define d2_blocklist "{}"
 #define d2_brlist "()"
 #define d2_logiclist "<>!=\"\'{}"
-#define d2_delimlist ",~$[](){}<>!=&|:+-*/^% \t\"\'\n\r;"
+#define d2_delimlist ",~$[](){}<>!=&|?:+-*/^%;"WHITESPACES//with whitespaces
+//#define d2_delimlist ",~$[](){}<>!=&|?:+-*/^%\"\';"//without whitespaces
 #define d2_packlist "\"\'"
 #define d2_escape '\\'
 #define d2_lf	";"
@@ -176,10 +178,41 @@ typedef enum {
 
 	//1500
 	TOK_COMMA,
+    TOK_SEMICOLON,
 
-	//1600
+	//1600 -- block
 	TOK_BLOCK_OPEN,
 	TOK_BLOCK_CLOSE,
+
+    // -- access
+    TOK_ACCESS,
+
+    // -- math functions will implement as mods
+
+    //1700 -- flow control c keywords
+    TOK_IF,
+    TOK_ELSE,
+    TOK_ELSE_IF,
+    TOK_SWITCH,
+    TOK_CASE,
+    TOK_DEFAULT,
+    TOK_DO,
+    TOK_WHILE,
+    TOK_BREAK,
+    TOK_CONTINUE,
+    TOK_FOR,
+    TOK_GOTO,
+    TOK_RETURN,
+
+    TOK_LABEL,   
+
+    //1900 -- scripting
+    TOK_THREAD,
+    TOK_EXIT,    
+
+    TOK_SYS,
+
+    TOK_PRINT,
 
 	//OPERANDS
 	TOK_CHAR,
@@ -213,10 +246,12 @@ struct d2_tok {
 extern "C" {
 #endif
 char* __d2_token(char* start, char delim[], char esc, char pack1, char pack2);
-size_t __d2_count_token(char* start, char delim[], char esc, char pack1, char pack2);
+size_t __d2_estimate_ntokens(char* start, char delim[], char esc, char pack1, char pack2);
+/*
 e13_t d2_tokenize(struct d2_handle* h);
 e13_t d2_lexer;
 e13_t d2_parse;
+*/
 #define d2_tok(exp) MACRO( __d2_token(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2) )
 #define d2_ntok(exp) MACRO( __d2_count_token(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2) )
 #ifdef __cplusplus
