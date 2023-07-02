@@ -31,7 +31,7 @@ struct d2_fn {
 
 	struct d2_var* varlist_first;
 	
-	struct d2_exp* explist_first, *exp;	
+	struct d2_exp* explist_first, *exp;
 };
 
 struct d2_context {	
