@@ -117,12 +117,12 @@ size_t __d2_estimate_ntokens(char* start,
 
 e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
 	
-	struct d2_tok* toks, *tok;
+	struct d2_tok* toks, *tok, *toklist_last;
 	size_t esttok, ntok;
 	char* bufdata;
 	size_t bufdatasize;
 	char* start, *end;
-	enum tok_enum;
+	enum tok_enum tokenum;
 	struct d2_tok_form_s* form;
 
 	esttok = __d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
@@ -135,7 +135,7 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
 	if(!bufdata) return e13_error(E13_NOMEM);
 	
 	tok = &toks[0];
-	*toklist_first = tok;
+	*toklist_first = NULL;
 
 	start = buf;
 	end = start;
@@ -151,16 +151,26 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
 			tok->rec.data = bufdata + end - start;
 
 			//phase 1, try to resolve tokens with sym table
-			for(tok_enum = TOK_EMPTY, form = d2_tok_form; form->form; form++, tok_enum++){
+			for(tokenum = TOK_EMPTY, form = d2_tok_form; form->form; form++, tokenum++){
 				if(!strcmp(form->form, tok->rec.data)){
-					tok->rec.code = tok_enum;
+					tok->rec.code = tokenum;
 					break;
 				}
 			}
 			if(!form->form){
 				tok->rec.code = TOK_INVAL;
 			}
+            tok->next = NULL;            
 
+            if(!(*toklist_first)){
+                tok->prev = NULL;
+                *toklist_first = tok;
+                toklist_last = tok;
+            } else {
+                tok->prev = toklist_last;
+                toklist_last->next = tok;
+                toklist_last = tok;
+            }
 		}
 	}
 
@@ -170,6 +180,23 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
 #ifdef TEST_TOKENIZE
 
 int test_tokenize(){
+	char exp[100];
+    struct d2_tok* toklist_first, *tok;
+    e13_t err;
+	printf("exp: ");
+	gets(exp);
+    err = __d2_tokenize(exp, strlen(exp), &toklist_first);
+
+    if(err == E13_OK){
+        for(tok = toklist_first; tok; tok = tok->next){
+            printf("%s -- %i\n", tok->rec.data, tok->rec.code);
+        }
+    }
+
+	return 0;
+}
+
+int test_tokenize2(){
 	char exp[100], tk[20], *s, *e;
 	printf("exp: ");
 	gets(exp);
@@ -190,4 +217,5 @@ int test_tokenize(){
 	return 0;
 }
 
-#endif
+
+#endif//TEST_TOKENIZE

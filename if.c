@@ -1,8 +1,11 @@
 #include "d2.h"
 #include "if.h"
+
 e13_t d2_init_if(struct d2_handle* h, FILE* fin, FILE* fout){
     h->fin = fin;
     h->fout = fout;
+
+    return E13_OK;
 }
 
 void d2_destroy_if(struct d2_handle* h){
@@ -10,7 +13,8 @@ void d2_destroy_if(struct d2_handle* h){
     fclose(h->fout);
 }
 
-e13_t d2_print(struct d2_handle* h, fmt, ...){
+e13_t d2_print(struct d2_handle* h, char* fmt, ...){
 
+    return E13_OK;
 }
 

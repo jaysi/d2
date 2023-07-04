@@ -12,7 +12,7 @@ extern "C" {
 
 e13_t d2_init_if(struct d2_handle* h, FILE* fin, FILE* fout);
 void d2_destroy_if(struct d2_handle* h);
-e13_t d2_print(struct d2_handle* h, fmt, ...);
+e13_t d2_print(struct d2_handle* h, char* fmt, ...);
 
 #define d2pr d2_print
 

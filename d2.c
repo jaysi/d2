@@ -42,7 +42,8 @@ int main(int argc, char* argv[]){
 
 	d2_init(&h, &conf);	
 
-    test_tokenize();
+    //test_tokenize();
+    test_tokenize2();
 
 	if(argc > 1){
 		
