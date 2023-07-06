@@ -1,5 +1,9 @@
+#include <ctype.h>
+#include <stdio.h>
 #include "lib13.h"
 #include "token.h"
+
+#define dm_tok2(fmt, ...) fprintf (stderr,fmt, __VA_ARGS__)
 
 #define TEST_TOKENIZE
 
@@ -115,40 +119,48 @@ size_t __d2_estimate_ntokens(char* start,
 		parse 
 */
 
-e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
+e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size_t* ntok){
 	
-	struct d2_tok* toks, *tok, *toklist_last;
-	size_t esttok, ntok;
+	struct d2_tok* toks, *tok, *toklist_last;	
 	char* bufdata;
 	size_t bufdatasize;
 	char* start, *end;
-	enum tok_enum tokenum;
+    size_t len, lentotal;
+	d2_tok_enum tokenum;
 	struct d2_tok_form_s* form;
 
-	esttok = __d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
+	*ntok = __d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
 
-	toks = (struct d2_tok*)malloc(esttok*sizeof struct d2_toks);
+    dm_tok2("esttok = %i\n", *ntok);
+
+	toks = (struct d2_tok*)malloc((*ntok)*sizeof(struct d2_tok));
 	if(!toks) return e13_error(E13_NOMEM);
 
-	bufdatasize = strlen(buf) + esttok + 1;
+	bufdatasize = strlen(buf) + (*ntok) + 1;
 	bufdata = (char*)malloc(bufdatasize);
 	if(!bufdata) return e13_error(E13_NOMEM);
-	
-	tok = &toks[0];
-	*toklist_first = NULL;
 
+    dm_tok2("bufsize = %i\n", bufdatasize);
+		
+	*toklist_first = NULL;
 	start = buf;
 	end = start;
+    *ntok = 0;
+    lentotal = 0;
 
 	while(*end){
-		end = __d2_tokenize(start, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
+		end = __d2_token(start, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
+        dm_tok2("end = %s(%c)\n", end, end[0]);
 		if(*end && !isspace(*end)){
-			ntok++;
-			memcpy(bufdata + end - start, start, end-start+1);
-			bufdata[end-start+1] = '\0';			
-			start = end+1;//out of bounds
 
-			tok->rec.data = bufdata + end - start;
+            len = end - start + 1;
+            tok = &toks[(*ntok)++];
+			memcpy(bufdata + lentotal, start, len);
+            lentotal += len;
+            dm_tok2("start = %s, len = %i, lentotal = %i, tok = %p\n", start, len, lentotal, tok);
+			bufdata[lentotal++] = '\0';
+
+			tok->rec.data = bufdata + lentotal;
 
 			//phase 1, try to resolve tokens with sym table
 			for(tokenum = TOK_EMPTY, form = d2_tok_form; form->form; form++, tokenum++){
@@ -156,11 +168,12 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
 					tok->rec.code = tokenum;
 					break;
 				}
-			}
+			}            
 			if(!form->form){
 				tok->rec.code = TOK_INVAL;
 			}
-            tok->next = NULL;            
+            dm_tok2("ntok = %i, data = %s, code = %i\n", ntok, tok->rec.data, tok->rec.code);
+            tok->next = NULL;
 
             if(!(*toklist_first)){
                 tok->prev = NULL;
@@ -171,7 +184,8 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first){
                 toklist_last->next = tok;
                 toklist_last = tok;
             }
-		}
+		}//if(*end && !isspace(*end))
+        start = end+1;//out of bounds
 	}
 
 	return E13_OK;
@@ -183,12 +197,13 @@ int test_tokenize(){
 	char exp[100];
     struct d2_tok* toklist_first, *tok;
     e13_t err;
+    size_t ntok;
 	printf("exp: ");
-	gets(exp);
-    err = __d2_tokenize(exp, strlen(exp), &toklist_first);
+	fgets(exp, 100, stdin);
+    err = d2_tokenize(exp, strlen(exp), &toklist_first, &ntok);
 
     if(err == E13_OK){
-        for(tok = toklist_first; tok; tok = tok->next){
+        for(tok = toklist_first; tok, ntok--; tok = tok->next){
             printf("%s -- %i\n", tok->rec.data, tok->rec.code);
         }
     }
@@ -199,7 +214,7 @@ int test_tokenize(){
 int test_tokenize2(){
 	char exp[100], tk[20], *s, *e;
 	printf("exp: ");
-	gets(exp);
+	fgets(exp, 100, stdin);
 	s = exp;
 	e = s;
 	while(*e){
@@ -213,7 +228,7 @@ int test_tokenize2(){
 		}//if(*e)
 		s = e+1;//out of bounds
 	}
-	printf("exp: %p, s: %p, e: %p, diff: %tp, sizeof(mem): %u\n", exp, s, e, (ptrdiff_t)(e-exp), __d2_estimate_ntokens(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2));
+	//printf("exp: %p, s: %p, e: %p, diff: %tp, sizeof(mem): %u\n", exp, s, e, (ptrdiff_t)(e-exp), __d2_estimate_ntokens(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2));
 	return 0;
 }
 
