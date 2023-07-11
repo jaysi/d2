@@ -215,11 +215,7 @@ typedef enum {
     TOK_PRINT,
 
 	//OPERANDS
-	TOK_CHAR,
-	TOK_SHORT,
-	TOK_LONG,
-	TOK_LONGLONG,
-	TOK_FLOAT,
+    TOK_NUMBER,
 	TOK_STRING,
 	TOK_BLOB,
 
@@ -238,6 +234,8 @@ struct d2_rec {
 };
 
 struct d2_tok {	
+    //long long ival;
+    long double dval;
 	struct d2_rec rec;
 	struct d2_tok* next, *prev;
 };
