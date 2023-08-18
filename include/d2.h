@@ -22,26 +22,10 @@ struct d2_exp {
 	struct d2_exp* next, *prev;
 };
 
-struct d2_fn {
-
-	size_t expbufsize;
-	char* expbuf;
-		
-	struct d2_tok* ret_tok;
-
-	struct d2_var* varlist_first;
-	
-	struct d2_exp* explist_first, *exp;
-};
-
 struct d2_context {	
 	
     size_t bufsize;
     char* buf;
-
-	//function table
-	size_t nfn;
-	struct d2_func* fntab, *fn;
 
 	struct d2_context* next, *prev;
 

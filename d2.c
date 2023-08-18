@@ -3,29 +3,8 @@
 #include "include/conf.h"
 #include "lib13.h"
 
-/*
-    global() {
-        
-        var1;
-        var2;
-        var3;
-
-        main() {
-            
-        }
-
-        fn1(arg1, arg2){
-            return var;
-        }
-
-        fn2(){
-
-        }
-    }
-*/
-
 e13_t d2_init(struct d2_handle* h, struct d2_conf* conf){
-	d2_init_handle_locks(h);	
+	d2_init_handle_locks(h);
 	return E13_OK;
 }
 

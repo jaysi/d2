@@ -1,0 +1,31 @@
+--] this is for d2c, the future project, d2 is a successor for the double, as described below.
+-] d2c:
+everything is a function, there is nothing outside the functions
+there is a global() function, even though you can't see it! which keeps everything
+there is also the main() function
+
+phase a:
+    tokenize
+phase b:
+    lex
+phase c:
+    combine
+phase d:
+    parse buffer to functions
+phase d1:
+    parse functions to expressions
+phase e:
+    convert infix function arguments and expressions to prefix
+
+-] d2
+everything is variable, there is no data encapsulation, just variables, code blocks and threads
+phase a:
+    tokenize
+phase b:
+    lex
+phase c:
+    combine
+phase d:
+    resolve blocks recursively
+phase e:
+  convert infix to prefix everywhere!

@@ -223,6 +223,7 @@ typedef enum {
 	TOK_VAR,
 
 	//FUNCTIONS
+    TOK_KEYWORD,
 	TOK_FN,
 	
 	TOK_INVAL
@@ -233,11 +234,11 @@ struct d2_rec {
 	char* data;//also written to disk! nbo in short, long, long long and float
 };
 
-struct d2_tok {	
+struct d2_tok {
     //long long ival;
     long double dval;
 	struct d2_rec rec;
-	struct d2_tok* next, *prev;
+	struct d2_tok* next, *prev, *blockend;
 };
 
 #ifdef __cplusplus
