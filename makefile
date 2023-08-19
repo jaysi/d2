@@ -36,7 +36,7 @@ cleanall: clean
 	$(RM) release/* debug/*
 
 backup:
-	$(TAR) d2.tar *.c makefile include/
+	$(TAR) d2.tar *.c makefile include/ manifesto
 	$(ZIP) d2.tar
 
 init:

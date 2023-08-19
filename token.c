@@ -267,25 +267,25 @@ e13_t d2_combine(struct d2_tok* toklist_first){
 			}
 		}//resolve combo operators ends
 
-        //resolve else if
-        for(tok = toklist_first; tok; tok = tok->next){
-            if(tok->rec.code == TOK_ELSE && tok->next && tok->next->rec.code == TOK_IF){
-                tok->rec.code = TOK_ELSE_IF;
-                tok->next = tok->next->next;
-                strcpy(tok->rec.data, d2_tok_form[TOK_ELSE_IF].form);
-            }
-        }
+		//resolve else if
+		for(tok = toklist_first; tok; tok = tok->next){
+			if(tok->rec.code == TOK_ELSE && tok->next && tok->next->rec.code == TOK_IF){
+				tok->rec.code = TOK_ELSE_IF;
+				tok->next = tok->next->next;
+				strcpy(tok->rec.data, d2_tok_form[TOK_ELSE_IF].form);
+			}
+		}
 
-        //resolve label
-        if( toklist_first->rec.code == TOK_STRING &&
-            toklist_first->next &&
-            toklist_first->next->rec.code == TOK_LABEL &&
-            !toklist_first->next->next
-            ){
-                toklist_first->rec.code = TOK_LABEL;
-                strcat(toklist_first->rec.data, toklist_first->next->rec.data);
-                toklist_first->next = NULL;
-        }
+		//resolve label
+		if( toklist_first->rec.code == TOK_STRING &&
+			toklist_first->next &&
+			toklist_first->next->rec.code == TOK_LABEL &&
+			!toklist_first->next->next
+			){
+				toklist_first->rec.code = TOK_LABEL;
+				strcat(toklist_first->rec.data, toklist_first->next->rec.data);
+				toklist_first->next = NULL;
+		}
 
 		//2. resolve scientific numbers
 		for(tok = toklist_first; tok; tok = tok->next) {
@@ -319,8 +319,8 @@ e13_t d2_combine(struct d2_tok* toklist_first){
 						}
 					}
 				} else {//if strtold()
-                    tok->rec.data[l] = c;
-                }//else (if strtold())
+					tok->rec.data[l] = c;
+				}//else (if strtold())
 			}
 		}
 	return E13_OK;
@@ -368,7 +368,7 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size
 			//init tok ptr
 			tok = &toks[(*ntok)++];
 			tok->next = NULL;
-            tok->blockend = NULL;
+			tok->blockend = NULL;
 			//tok->prev = NULL;//no need, will set later
 
 			memcpy(tokbuf, start, len);
@@ -426,23 +426,23 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size
 }
 
 struct d2_tok* d2_blockize(struct d2_tok* first){
-    struct d2_tok* tok = first;
-    
-    while(tok){
-        switch(tok->rec.code){
-            case TOK_BLOCK_OPEN:
-                tok = d2_blockize(tok->next);
-                break;
-            case TOK_BLOCK_CLOSE:
-                first->blockend = tok->prev;
-                return tok->next;
-                break;
-            default:
-                tok = tok->next;
-                break;
-        }
-    }
-    return NULL;
+	struct d2_tok* tok = first;
+	
+	while(tok){
+		switch(tok->rec.code){
+			case TOK_BLOCK_OPEN:
+				tok = d2_blockize(tok->next);
+				break;
+			case TOK_BLOCK_CLOSE:
+				first->blockend = tok->prev;
+				return tok->next;
+				break;
+			default:
+				tok = tok->next;
+				break;
+		}
+	}
+	return NULL;
 }
 
 #ifdef TEST_TOKENIZE
@@ -451,7 +451,8 @@ int test_tokenize(){
 	char exp[100];
 	struct d2_tok* toklist_first, *tok, *toklist_last;
 	e13_t err;
-	size_t ntok;
+	size_t ntok, nexp;
+	struct d2_exp* exps;    
 	printf("exp: ");
 	fgets(exp, 100, stdin);
 
@@ -463,13 +464,23 @@ int test_tokenize(){
 		//phase c and b1
 		d2_combine(toklist_first);
 
-        d2_blockize(toklist_first);
+		d2_blockize(toklist_first);
 
 		for(tok = toklist_first; tok; tok = tok->next){
 			printf("%s -- %i", tok->rec.data, tok->rec.code);
-            tok->blockend?printf("{%s..%s}\n", tok->rec.data, tok->blockend->rec.data):printf("\n");
+			tok->blockend?printf("{%s..%s}\n", tok->rec.data, tok->blockend->rec.data):printf("\n");
 			if(!tok->next) toklist_last = tok;
 		}
+
+		if((err=d2_expize(toklist_first, &exps, &nexp)) == E13_OK){            
+			for(ntok = 0; ntok < nexp; ntok++){
+				printf("#%i: exp->begin: %s, exp->end: %s\n", ntok, exps[ntok].infix_tok_first->rec.data, exps[ntok].infix_tok_last->rec.data);
+			}
+			free(exps);
+		} else {
+			printf("expize! failed code: %i\n", err);
+		}
+
 	}
 
 	return 0;
