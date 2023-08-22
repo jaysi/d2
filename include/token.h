@@ -219,7 +219,7 @@ typedef enum {
 	TOK_STRING,
 	TOK_BLOB,
 
-	//VAR
+	//VAR, THIS IS THE OPERATOR/OPERAND SEPARATOR! DON'T DO ANYTHING WRONG!!
 	TOK_VAR,
 
 	//FUNCTIONS
@@ -228,6 +228,8 @@ typedef enum {
 	
 	TOK_INVAL
 } d2_tok_enum;
+
+#define TOK_OO_LIMMIT   TOK_VAR
 
 struct d2_rec {
 	uint16_t code;//written to disk in network byte order
@@ -238,7 +240,9 @@ struct d2_tok {
     //long long ival;
     long double dval;
 	struct d2_rec rec;
-	struct d2_tok* next, *prev, *blockend;
+	struct d2_tok* next, *prev;
+    struct d2_tok* blockend;
+    struct d2_tok* prefix_next, *prefix_prev;
 };
 
 #ifdef __cplusplus
