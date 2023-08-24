@@ -241,8 +241,9 @@ struct d2_tok {
     long double dval;
 	struct d2_rec rec;
 	struct d2_tok* next, *prev;
-    struct d2_tok* blockend;
-    struct d2_tok* prefix_next, *prefix_prev;
+    struct d2_tok* blockend;//if set means this tok is blockbegin
+    struct d2_tok* prefix_next, *prefix_prev;//prefix handler
+    struct d2_tok* stack_next;
 };
 
 #ifdef __cplusplus

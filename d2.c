@@ -3,6 +3,10 @@
 #include "include/conf.h"
 #include "lib13.h"
 
+#ifndef NDEBUG
+extern int test_tokenize();
+#endif
+
 e13_t d2_init(struct d2_handle* h, struct d2_conf* conf){
 	d2_init_handle_locks(h);
 	return E13_OK;

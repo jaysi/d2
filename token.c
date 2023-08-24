@@ -4,12 +4,16 @@
 #include "token.h"
 #include "d2.h"
 
+#define dm_loc() fprintf(stderr, "loc: %s.%s().%i", __FILE__, __FUNC__, __LINE__)
 #define dm(fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
-#define dm_tok2(fmt, ...)
-#define dm_tok3(fmt, ...)
+#define dm_tok1(fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_tok2(fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_tok3(fmt, ...) 
 
 #define TEST_TOKENIZE
 
+extern e13_t d2_expize(struct d2_exp* parent, struct d2_tok* toklist_first, struct d2_exp** exps, size_t* nexp);
+extern e13_t d2_infix2prefix(struct d2_exp* exp);
 
 /*
 	source code shape:
@@ -23,7 +27,7 @@
 struct d2_tok_form_s {
 
 	char* form;
-    int preced;
+	int preced;
 
 } d2_tok_form[] = {
 					//EMPTY
@@ -141,8 +145,43 @@ struct d2_tok_form_s {
 };
 
 int __d2_tok_preced(d2_tok_enum code){
-    return d2_tok_form[code].preced;
+	return d2_tok_form[code].preced;
 }
+
+size_t __d2_estimate_ntokens(char* start,
+						char delim[],
+						char esc,
+						char pack1,
+						char pack2
+						){
+	char* end, *d = delim;
+	char pack = 0;
+	size_t cnt = 0UL;
+	end = start;
+	while(*end){
+		dm_tok1("end is %c, cnt = %lu\n", *end, cnt);
+		if(*end == esc) {dm_tok1("escape %c passed to %c\n", *(end+1),*(end+2));end+=2; continue;}
+		if(!pack){
+			d = delim;
+			while(*d){
+				if(*d == *end){
+					if(*end == pack1 || *end == pack2){
+						pack = *end;
+						break;
+					}
+					cnt+=2;
+				}
+				if(pack) continue;
+				d++;
+			}
+		} else { //if(!pack)
+			if(*end == pack) cnt+=2;
+		}
+		end++;
+	}
+	return cnt;
+}
+
 
 char* __d2_token(   char* start,
 					char delim[],
@@ -153,23 +192,23 @@ char* __d2_token(   char* start,
 	char* end, *d = delim;
 	char pack = 0;	
 	end = start;    
-	while(*end){            
+	while(*end){		
 		if(*end == esc) {end+=2; continue;}
-			if(!pack){
-					d = delim;
-					while(*d){
-							if(*d == *end){
-								if(*end == pack1 || *end == pack2){
-										pack = *end;
-										break;
-								}
-								//will take care of isspace() in the calling function
-								//while(isspace(*end)) end++;//skip whitespaces
-								return start==end?end:end-1;
-							}
-							if(pack) break;
-							d++;
+			if(!pack){					
+				d = delim;
+				while(*d){
+					if(*d == *end){
+						if(*end == pack1 || *end == pack2){
+							pack = *end;
+							break;
+						}
+						//will take care of isspace() in the calling function
+						//while(isspace(*end)) end++;//skip whitespaces
+						return start==end?end:end-1;
 					}
+					if(pack) break;
+					d++;
+				}
 			} else {
 				if(*end == pack){
 					return end;
@@ -178,39 +217,6 @@ char* __d2_token(   char* start,
 			end++;
 	}
 	return end;
-}
-
-size_t __d2_estimate_ntokens(char* start,
-						char delim[],
-						char esc,
-						char pack1,
-						char pack2
-						){
-		char* end, *d = delim;
-		char pack = 0;
-		size_t cnt = 0UL;
-		end = start;
-		while(*end){
-				if(*end == esc) {end+=2; continue;}                
-				if(!pack){                        
-						d = delim;
-						while(*d){
-								if(*d == *end){
-										if(*end == pack1 || *end == pack2){
-												pack = *end;
-												break;
-										}
-										cnt++;
-								}
-								if(pack) continue;
-								d++;
-						}
-				} else { //if(!pack)
-					if(*end == pack) cnt++;
-				}
-				end++;
-		}
-		return ++cnt;
 }
 
 e13_t d2_lex(struct d2_tok* tok){
@@ -282,7 +288,8 @@ e13_t d2_combine(struct d2_tok* toklist_first){
 		}
 
 		//resolve label
-		if( toklist_first->rec.code == TOK_STRING &&
+		if( toklist_first &&
+			toklist_first->rec.code == TOK_STRING &&
 			toklist_first->next &&
 			toklist_first->next->rec.code == TOK_LABEL &&
 			!toklist_first->next->next
@@ -342,7 +349,7 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size
 
 	*ntok = __d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1, d2_pack2);
 
-	dm_tok2("esttok = %i\n", *ntok);
+	dm_tok2("esttok = %lu\n", *ntok);
 
 	//TODO: combine two malloc()s in one bigbuf : toks[]+bufdata
 
@@ -353,13 +360,14 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size
 	bufdata = (char*)malloc(bufdatasize);
 	if(!bufdata) return e13_error(E13_NOMEM);
 
-	dm_tok2("bufsize = %i\n", bufdatasize);
+	dm_tok2("bufsize = %lu\n", bufdatasize);
 
 	//some init before the loop
 	*toklist_first = NULL;
 	start = buf;	
 	*ntok = 0;
 	total = 0;
+	end = start;
 
 //defines to speed up things
 #define len (end - start + 1)
@@ -380,7 +388,7 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size
 
 			tok->rec.data = tokbuf;//set before updating total
 
-			dm_tok2("tokbuf = %s, len = %i, lentotal = %i, tok = %p\n", tokbuf, len, total, tok);
+			dm_tok2("tokbuf = %s, len = %li, lentotal = %lu, tok = %p\n", tokbuf, len, total, (void*)tok);
 
 			total += len;//update total
 			*(tokbuf) = 0;//now total has been updated, terminate token buffer 
@@ -430,39 +438,21 @@ e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size
 	return E13_OK;
 }
 
-struct d2_tok* d2_blockize(struct d2_tok* first){
-	struct d2_tok* tok = first;
-	
-	while(tok){
-		switch(tok->rec.code){
-			case TOK_BLOCK_OPEN:
-				tok = d2_blockize(tok->next);
-				break;
-			case TOK_BLOCK_CLOSE:
-				first->blockend = tok->prev;
-				return tok->next;
-				break;
-			default:
-				tok = tok->next;
-				break;
-		}
-	}
-	return NULL;
-}
+extern struct d2_tok* d2_blockize(struct d2_tok* first);
 
 #ifdef TEST_TOKENIZE
 
 int test_tokenize(){
 	char exp[100];
-	struct d2_tok* toklist_first, *tok, *toklist_last;
+	struct d2_tok* toklist_first, *tok;//, *toklist_last;
 	e13_t err;
 	size_t ntok, nexp;
-	struct d2_exp* exps;    
+	struct d2_exp* exps;
 	printf("exp: ");
 	fgets(exp, 100, stdin);
 
 	//phase a and b
-	err = d2_tokenize(exp, strlen(exp), &toklist_first, &ntok);    
+	err = d2_tokenize(exp, strlen(exp), &toklist_first, &ntok);
 
 	if(err == E13_OK){
 		
@@ -474,18 +464,36 @@ int test_tokenize(){
 		for(tok = toklist_first; tok; tok = tok->next){
 			printf("%s -- %i", tok->rec.data, tok->rec.code);
 			tok->blockend?printf("{%s..%s}\n", tok->rec.data, tok->blockend->rec.data):printf("\n");
-			if(!tok->next) toklist_last = tok;
+			//if(!tok->next) toklist_last = tok;
 		}
 
-		if((err=d2_expize(NULL, toklist_first, &exps, &nexp)) == E13_OK){            
+		if((err=d2_expize(NULL, toklist_first, &exps, &nexp)) == E13_OK){
+			printf("nexp=%lu\n", nexp);
 			for(ntok = 0; ntok < nexp; ntok++){
-				printf("#%i: exp->begin: %s, exp->end: %s\n", ntok, exps[ntok].infix_tok_first->rec.data, exps[ntok].infix_tok_last->rec.data);
-			}
-			free(exps);
+				printf("#%lu: exp->begin: %s, exp->end: %s, exp->ntok = %lu\n",
+						ntok, exps[ntok].infix_tok_first->rec.data,
+						exps[ntok].infix_tok_last->rec.data, exps[ntok].ntok);
+			}						
 		} else {
 			printf("expize! failed code: %i\n", err);
+			return -1;
 		}
 
+		
+		for(ntok = 0; ntok < nexp; ntok++){
+
+			if(d2_infix2prefix(exps+ntok) == E13_OK){
+				for(tok = exps[ntok].prefix_tok_first; tok; tok = tok->prefix_next){
+					printf("%s ", tok->rec.data);
+				}
+				printf("\nprefix dump done\n");
+			} else {
+				printf("infix2prefix fails here < %s >\n", exps[ntok].infix_tok_first->rec.data);
+			}
+		}
+
+		free(exps);
+		
 	}
 
 	return 0;

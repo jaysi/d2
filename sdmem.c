@@ -15,5 +15,5 @@ struct sdmem_s {
 };
 
 int sdmem_init(struct sdmem_s* ctl, char* buf, size_t size, size_t n){
-	
+	return e13_error(E13_IMPLEMENT);
 }

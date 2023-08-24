@@ -1,30 +1,78 @@
 #include "d2.h"
 #include "error13.h"
 
-int __d2_tok_preced(d2_tok_enum code);
+#define dm_pre1(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
 
-void __d2_pop_tok(struct d2_tok* stack, size_t* nstack, struct d2_tok** tok){
+extern int __d2_tok_preced(d2_tok_enum code);
 
+e13_t __d2_pop_tok(struct d2_exp* exp, struct d2_tok** tok){
+    dm_pre1("exp->stacktop = %s (will update)\n", !exp->stack_top?"NULL":exp->stack_top->rec.data);
+	if(!exp->stack_top) return e13_error(E13_EMPTY);
+	*tok = exp->stack_top;
+    exp->stack_top = exp->stack_top->stack_next;
+	return E13_OK;
 }
 
-void __d2_push_tok(struct d2_tok* stack, size_t* nstack, struct d2_tok* tok){
-    
-}
-
-e13_t infix2prefix(struct d2_exp* exp){
-    size_t ntok, nstack;
-    struct d2_tok* tok;
-    struct d2_tok* stack;    
-    stack = (struct d2_tok*)malloc(exp->ntok*sizeof(struct d2_tok));    
-    if(!stack) return e13_error(E13_NOMEM);
-    nstack = 0UL;
-    for(ntok = 0UL, tok = exp->infix_tok_last; tok, tok!=exp->infix_tok_first; tok = tok->prev){
-        if(tok->rec.code < TOK_OO_LIMMIT){//TOK_VAR IS THE LIMMIT BETWEEN OPERATOR/OPERAND
-            switch(tok->rec.code){
-                
-            }
-        } else {//append to the end of prefix
-
-        }
+void __d2_push_tok(struct d2_exp* exp, struct d2_tok* tok){
+    tok->stack_next = NULL;
+    if(!exp->stack_top) exp->stack_top = tok;
+    else{
+        tok->stack_next = exp->stack_top;
+        exp->stack_top = tok;
     }
+}
+
+void __d2_appand_postfix(struct d2_exp* exp, struct d2_tok* tok){
+	if(!exp->prefix_tok_first){
+		tok->prefix_prev = NULL;
+		tok->prefix_next = NULL;
+		exp->prefix_tok_first = tok;
+		exp->prefix_tok_last = exp->prefix_tok_first;
+	} else {
+		tok->prefix_next = NULL;
+		tok->prefix_prev = exp->prefix_tok_last;
+		exp->prefix_tok_last->prefix_next = tok;
+		exp->prefix_tok_last = tok;
+	}
+}
+
+e13_t d2_infix2prefix(struct d2_exp* exp){	
+	struct d2_tok* enumtok, *poptok;	
+	exp->prefix_tok_first = NULL;
+    enumtok = exp->infix_tok_last;
+    exp->stack_top = NULL;
+    
+	while(enumtok){//move backwards
+
+        dm_pre1("enumtok->data: %s\n", enumtok->rec.data);
+
+		if(enumtok->rec.code < TOK_OO_LIMMIT){//OPERATOR, TOK_VAR IS THE LIMMIT BETWEEN OPERATOR/OPERAND
+			switch(enumtok->rec.code){
+
+				case TOK_PAREN_CLOSE://since i didn't invert paranthesis!
+				while(__d2_pop_tok(exp, &poptok) == E13_OK && poptok->rec.code != TOK_PAREN_OPEN){
+					__d2_appand_postfix(exp, poptok);
+				}
+				break;
+
+				default:
+				while(exp->stack_top && __d2_tok_preced(enumtok->rec.code) <= __d2_tok_preced(exp->stack_top->rec.code)){
+                    if(__d2_pop_tok(exp, &poptok) == E13_OK)
+					    __d2_appand_postfix(exp, poptok);
+                    else break;
+				}
+				__d2_push_tok(exp, enumtok);
+				break;
+
+			}
+		} else {//OPERAND, append to the end of prefix
+			__d2_appand_postfix(exp, enumtok);
+		}
+		enumtok = enumtok->prev; //move backwards, TODO: FIX the block thing
+	}
+
+	//pop-append remaining stack
+	while(__d2_pop_tok(exp, &poptok) == E13_OK) __d2_appand_postfix(exp, poptok);
+
+	return E13_OK;
 }

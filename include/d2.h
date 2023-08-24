@@ -13,19 +13,15 @@
 #define MACRO(A) do { A; } while(0)
 #endif
 
-struct d2_block {
-    size_t nexp;
-    struct d2_exp* exps;
-}
-
 struct d2_exp {
 
 	char flags;
 	char* infixbuf;
     size_t ntok;
-
+    
 	struct d2_tok* infix_tok_first, *infix_tok_last;
     struct d2_tok* prefix_tok_first, *prefix_tok_last;
+    struct d2_tok* stack_top;
 	struct d2_exp* next, *prev;
 };
 
