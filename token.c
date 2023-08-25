@@ -14,6 +14,7 @@
 
 extern e13_t d2_expize(struct d2_exp* parent, struct d2_tok* toklist_first, struct d2_exp** exps, size_t* nexp);
 extern e13_t d2_infix2prefix(struct d2_exp* exp);
+extern e13_t d2_run_exp(struct d2_exp* exp);
 
 /*
 	source code shape:
@@ -461,19 +462,23 @@ int test_tokenize(){
 
 		d2_blockize(toklist_first);
 
+        /*
 		for(tok = toklist_first; tok; tok = tok->next){
 			printf("%s -- %i", tok->rec.data, tok->rec.code);
 			tok->blockend?printf("{%s..%s}\n", tok->rec.data, tok->blockend->rec.data):printf("\n");
 			//if(!tok->next) toklist_last = tok;
 		}
+        */
 
 		if((err=d2_expize(NULL, toklist_first, &exps, &nexp)) == E13_OK){
 			printf("nexp=%lu\n", nexp);
+            /*
 			for(ntok = 0; ntok < nexp; ntok++){
 				printf("#%lu: exp->begin: %s, exp->end: %s, exp->ntok = %lu\n",
 						ntok, exps[ntok].infix_tok_first->rec.data,
 						exps[ntok].infix_tok_last->rec.data, exps[ntok].ntok);
-			}						
+			}
+            */						
 		} else {
 			printf("expize! failed code: %i\n", err);
 			return -1;
@@ -483,14 +488,20 @@ int test_tokenize(){
 		for(ntok = 0; ntok < nexp; ntok++){
 
 			if(d2_infix2prefix(exps+ntok) == E13_OK){
+                /*
 				for(tok = exps[ntok].prefix_tok_first; tok; tok = tok->prefix_next){
 					printf("%s ", tok->rec.data);
 				}
-				printf("\nprefix dump done\n");
+				printf("\n");
+                */
+                if(d2_run_exp(exps+ntok) == E13_OK){
+                    printf("result of #%lu is %Lf\n", ntok, exps[ntok].stack_top->dval);
+                }
+
 			} else {
 				printf("infix2prefix fails here < %s >\n", exps[ntok].infix_tok_first->rec.data);
-			}
-		}
+			}            
+		}        
 
 		free(exps);
 		

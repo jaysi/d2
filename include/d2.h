@@ -19,9 +19,11 @@ struct d2_exp {
 	char* infixbuf;
     size_t ntok;
     
+    //views
 	struct d2_tok* infix_tok_first, *infix_tok_last;
     struct d2_tok* prefix_tok_first, *prefix_tok_last;
     struct d2_tok* stack_top;
+    //list
 	struct d2_exp* next, *prev;
 };
 
@@ -29,6 +31,9 @@ struct d2_context {
 	
     size_t bufsize;
     char* buf;
+
+    size_t nexp;
+    struct d2_exp* exps;//dynamic array
 
 	struct d2_context* next, *prev;
 

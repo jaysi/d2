@@ -204,8 +204,8 @@ typedef enum {
     TOK_GOTO,
     TOK_RETURN,
 
-    TOK_LABEL,   
-
+    TOK_LABEL,
+    
     //1900 -- scripting
     TOK_THREAD,
     TOK_EXIT,    
@@ -229,7 +229,7 @@ typedef enum {
 	TOK_INVAL
 } d2_tok_enum;
 
-#define TOK_OO_LIMMIT   TOK_VAR
+#define TOK_OO_LIMMIT   TOK_NUMBER
 
 struct d2_rec {
 	uint16_t code;//written to disk in network byte order
