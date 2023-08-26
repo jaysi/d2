@@ -27,13 +27,26 @@ struct d2_exp {
 	struct d2_exp* next, *prev;
 };
 
-struct d2_context {	
-	
+struct d2_var {
+    char* name;
+    long double val;
+    struct d2_val* next;
+}
+
+#define D2_CTXF_COPY_BUF    (0x01<<0)
+
+struct d2_ctx {	
+
+    char flags;
     size_t bufsize;
     char* buf;
 
-    size_t nexp;
+    struct d2_tok* toklist_first;
+
+    size_t nexps;
     struct d2_exp* exps;//dynamic array
+
+    struct d2_var* var_list_first, *var_list_last;
 
 	struct d2_context* next, *prev;
 
