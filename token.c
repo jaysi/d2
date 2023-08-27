@@ -10,8 +10,6 @@
 #define dm_tok2(fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok3(fmt, ...) 
 
-#define TEST_TOKENIZE
-
 /*
 	source code shape:
 	block;

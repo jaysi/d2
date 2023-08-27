@@ -30,8 +30,10 @@ struct d2_exp {
 struct d2_var {
     char* name;
     long double val;
-    struct d2_val* next;
-}
+    struct d2_var* next;
+};
+
+struct d2_handle;
 
 #define D2_CTXF_COPY_BUF    (0x01<<0)
 
@@ -41,21 +43,24 @@ struct d2_ctx {
     size_t bufsize;
     char* buf;
 
-    struct d2_tok* toklist_first;
+    size_t ntoks;
+    struct d2_tok* toks;
 
     size_t nexps;
     struct d2_exp* exps;//dynamic array
 
     struct d2_var* var_list_first, *var_list_last;
 
-	struct d2_context* next, *prev;
+	struct d2_ctx* next, *prev;
+
+    struct d2_handle* h;    
 
 };
 
 struct d2_handle {
 
 	pthread_mutex_t ctxlist_mx;
-	struct d2_context *ctxlist_first, *ctx;
+	struct d2_ctx *ctxlist_first, *ctx;
 
 	pthread_mutex_t stream_mx;
 	//io streams
