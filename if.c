@@ -6,6 +6,13 @@
 #define TEST_TOKENIZE
 
 extern e13_t d2_init_ctx(struct d2_handle* h, struct d2_ctx* ctx, char* buf, size_t bufsize, char flags);
+e13_t d2_rm_ctx(struct d2_handle* h, char* name);
+e13_t d2_find_ctx(struct d2_handle* h, char* name);
+e13_t d2_new_ctx(struct d2_handle* h, char* name);
+e13_t d2_set_ctx_buf(struct d2_handle* h, char* name, char* buf, size_t bufsize, char flags);
+e13_t d2_rst_ctx(struct d2_handle* h, char* name);
+e13_t d2_run_ctx(struct d2_handle* h, char* name);
+
 extern struct d2_tok* d2_blockize(struct d2_tok* first);
 extern e13_t d2_tokenize(char* buf, size_t bufsize, struct d2_tok** toklist_first, size_t* ntok);
 extern e13_t d2_combine(struct d2_tok* toklist_first);
@@ -28,12 +35,53 @@ void d2_destroy_if(struct d2_handle* h){
 }
 
 #define d2_print(h, fmt, ...) fprintf(h->fout, fmt, __VA_ARGS__)
+#define d2_emsg(h, fmt, ...) fprintf(h->ferr, fmt, __VA_ARGS__)
 #define d2_gets(buf, bufsize, h) fgets(buf, bufsize, h->fin)
+
+void d2_print_console_help(struct d2_handle* h){
+
+    d2_print(h, "%s", "d2 interpreter, kernel %s - ui %s\n", D2_KERNEL_VER, D2_UI_VER);
+    d2_print(h, "%s", "cui interface command list:\n");
+    d2_print(h, "%s", "new\t\tnew context\n");
+    d2_print(h, "%s", "ls\t\tlist contexts\n");
+    d2_print(h, "%s", "rm\t\tremove context\n");
+    d2_print(h, "%s", "set\t\tset context buffer\n");
+    d2_print(h, "%s", "rst\t\treset context buffer\n");
+    d2_print(h, "%s", "run\t\trun context\n"); 
+
+}
+
+void d2_print_ctx_list(struct d2_handle* h){
+    struct d2_ctx* ctx;
+    d2_print(h, "%s", "ctx list {\n");
+    d2_lock_ctx(h);
+    ctx = h->ctxlist_first;    
+    while(ctx){
+        d2_print(h, "%s\n", ctx->name);
+        ctx = ctx->next;
+    }    
+    d2_unlock_ctx(h);
+    d2_print(h, "%s", "} ctx list;\n");
+}
 
 void d2_console_if(struct d2_handle* h){
 
-    char buf[MAX_IN_BUF];
-    struct d2_ctx* ctx;    
+    char *buf;
+    char *name;
+    struct d2_ctx* ctx;
+
+    buf = (char*)malloc(h->conf.max_ctx_buf);
+    if(!buf){
+        d2_emsg(h, "%s", "out of memmory\n");
+        return;
+    }
+    name = (char*)malloc(h->conf.max_ctx_name);    
+    if(!name){
+        free(buf);
+        d2_emsg(h, "%s", "out of memmory\n");
+        return;
+    }
+
 
     d2_print(h, "%s", "d2 console interactive interface, type ? for help\n");
 
@@ -45,10 +93,100 @@ void d2_console_if(struct d2_handle* h){
             d2_print_console_help(h);
         }
 
-        if(!strcmp(buf, "new_ctx")){
-            d2_gets(buf, MAX_IN_BUF, h);
-            ctx = d2_new_ctx(h, buf);
+        if(!strcmp(buf, "new")){
+            d2_print(h, "%s", "name> ");
+            d2_gets(name, h->conf.max_ctx_name, h);            
+            switch(d2_new_ctx(h, name)){
+                case E13_OK:
+                d2_print(h, "%s", "ok\n");
+                break;
+                case e13_error(E13_EXISTS):
+                d2_emsg(h, "%s", "already exists\n");
+                break;
+                default:
+                d2_emsg(h, "%s", "system error\n");
+                break;
+            }
         }
+
+        if(!strcmp(buf, "ls")){
+            d2_print_ctx_list(h);
+        }
+
+        if(!strcmp(buf, "rm")){
+
+            d2_print(h, "%s", "name> ");
+            d2_gets(name, h->conf.max_ctx_name, h);            
+            switch(d2_rm_ctx(h, name)){
+                case E13_OK:
+                d2_print(h, "%s", "ok\n");
+                break;
+                case e13_error(E13_NOTFOUND):
+                d2_emsg(h, "%s", "not found\n");
+                break;
+                default:
+                d2_emsg(h, "%s", "system error\n");
+                break;
+            }
+        }
+
+        if(!strcmp(buf, "set")){
+
+            d2_print(h, "%s", "name> ");
+            d2_gets(name, h->conf.max_ctx_name, h);
+            d2_print(h, "%s", "src> ");
+            d2_gets(buf, h->conf.max_ctx_buf, h);
+            switch(d2_set_ctx_buf(h, name, buf, strlen(buf)+1, D2_CTXF_COPY_BUF)){
+                case E13_OK:
+                d2_print(h, "%s", "ok\n");
+                break;
+                case e13_error(E13_NOTFOUND):
+                d2_emsg(h, "%s", "not found\n");
+                break;
+                case e13_error(E13_EXISTS):
+                d2_emsg(h, "%s", "already exists, 'rst' first\n");
+                break;
+                default:
+                d2_emsg(h, "%s", "system error\n");
+                break;
+            }
+        }
+
+        if(!strcmp(buf, "rst")){
+
+            d2_print(h, "%s", "name> ");
+            d2_gets(name, h->conf.max_ctx_name, h);            
+            switch(d2_rst_ctx(h, name)){
+                case E13_OK:
+                d2_print(h, "%s", "ok\n");
+                break;
+                case e13_error(E13_NOTFOUND):
+                d2_emsg(h, "%s", "not found\n");
+                break;
+                default:
+                d2_emsg(h, "%s", "system error\n");
+                break;
+            }
+        }
+
+        if(!strcmp(buf, "run")){
+
+            d2_print(h, "%s", "name> ");
+            d2_gets(name, h->conf.max_ctx_name, h);
+            switch(d2_run_ctx(h, name)){
+                case E13_OK:
+                d2_print(h, "%s", "ok\n");
+                break;
+                case e13_error(E13_NOTFOUND):
+                d2_emsg(h, "%s", "not found\n");
+                break;
+                default:
+                d2_emsg(h, "%s", "system error\n");
+                break;
+            }
+        }
+
+
     }
 
 }

@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "include/d2.h"
 #include "include/lock.h"
 #include "include/conf.h"
@@ -11,8 +13,11 @@ extern int test_tokenize();
 
 extern void d2_console_if(struct d2_handle* h);
 
-e13_t d2_init_handle(struct d2_handle* h, struct d2_conf* conf, FILE* fin, FILE* fout){
+e13_t d2_init_handle(struct d2_handle* h, struct d2_conf* conf, FILE* fin, FILE* fout, FILE *ferr){
 	d2_init_handle_locks(h);
+    h->fin = fin;
+    h->fout = fout;
+    h->ferr = ferr;
 	return E13_OK;
 }
 
@@ -27,7 +32,7 @@ int main(int argc, char* argv[]){
 
 	d2_load_conf(&conf, NULL);
 
-	d2_init_handle(&h, &conf, stdin, stdout);
+	d2_init_handle(&h, &conf, stdin, stdout, stderr);
 
 #ifdef TEST_TOKENIZE
     test_tokenize();

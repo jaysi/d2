@@ -7,6 +7,9 @@
 
 #include "token.h"
 
+#define D2_KERNEL_VER "0.0.1-dev"
+#define D2_UI_VER  "0.0.1-cui-dev"
+
 #define MAIN_CTX_NAME   "main"
 
 #ifndef MACRO
@@ -36,12 +39,15 @@ struct d2_var {
 struct d2_handle;
 
 #define D2_CTXF_COPY_BUF    (0x01<<0)
+#define D2_CTXF_LOCKED      (0x01<<1)
 
 struct d2_ctx {	
 
     char flags;
     size_t bufsize;
     char* buf;
+
+    char* name;
 
     size_t ntoks;
     struct d2_tok* toks;
@@ -60,11 +66,11 @@ struct d2_ctx {
 struct d2_handle {
 
 	pthread_mutex_t ctxlist_mx;
-	struct d2_ctx *ctxlist_first, *ctx;
+	struct d2_ctx *ctxlist_first, *ctxlist_last, *ctx;
 
 	pthread_mutex_t stream_mx;
 	//io streams
-	FILE* fin, *fout;
+	FILE* fin, *fout, *ferr;
 
 };
 
