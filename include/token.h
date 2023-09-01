@@ -4,7 +4,7 @@
 #include "type13.h"
 #include "types.h"
 
-#define WHITESPACES " \t\"\'\n\r\f"
+#define WHITESPACES " \t\"\'\n\r\f\v"
 #define d2_blocklist "{}"
 #define d2_brlist "()"
 #define d2_logiclist "<>!=\"\'{}"
@@ -112,7 +112,7 @@ typedef enum {
 	TOK_PAREN_OPEN,
 	TOK_PAREN_CLOSE,
 	TOK_ARRAY_OPEN,
-	TOK_ARRAY_CLOSE,  
+	TOK_ARRAY_CLOSE,
 
 	//200
 	TOK_PLUS1,
@@ -244,6 +244,7 @@ struct d2_tok {
     struct d2_tok* blockend;//if set means this tok is blockbegin
     struct d2_tok* prefix_next, *prefix_prev;//prefix handler
     struct d2_tok* stack_next;
+    struct d2_tok* ret_next;
 };
 
 #ifdef __cplusplus

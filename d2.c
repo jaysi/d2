@@ -5,7 +5,7 @@
 #include "include/conf.h"
 #include "lib13.h"
 
-#define TEST_TOKENIZE
+#undef TEST_TOKENIZE
 
 #ifdef TEST_TOKENIZE
 extern int test_tokenize();
@@ -13,26 +13,25 @@ extern int test_tokenize();
 
 extern void d2_console_if(struct d2_handle* h);
 
-e13_t d2_init_handle(struct d2_handle* h, struct d2_conf* conf, FILE* fin, FILE* fout, FILE *ferr){
+e13_t d2_init_handle(struct d2_handle* h, FILE* fin, FILE* fout, FILE *ferr){
 	d2_init_handle_locks(h);
     h->fin = fin;
     h->fout = fout;
     h->ferr = ferr;
+    h->ctxlist_first = NULL;
 	return E13_OK;
 }
 
 int main(int argc, char* argv[]){
 
-	struct d2_handle h;
-	struct d2_conf conf;
+	struct d2_handle h;	
 
 #ifndef NDEBUG
     printf("compile time:%s-%s\n", __DATE__, __TIME__);
 #endif
 
-	d2_load_conf(&conf, NULL);
-
-	d2_init_handle(&h, &conf, stdin, stdout, stderr);
+    d2_load_conf(&h.conf, NULL);	
+    d2_init_handle(&h, stdin, stdout, stderr);	
 
 #ifdef TEST_TOKENIZE
     test_tokenize();

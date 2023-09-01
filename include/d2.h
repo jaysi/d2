@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "token.h"
+#include "conf.h"
 
 #define D2_KERNEL_VER "0.0.1-dev"
 #define D2_UI_VER  "0.0.1-cui-dev"
@@ -36,6 +37,10 @@ struct d2_var {
     struct d2_var* next;
 };
 
+struct d2_ret {
+    struct d2_tok tok;
+};
+
 struct d2_handle;
 
 #define D2_CTXF_COPY_BUF    (0x01<<0)
@@ -52,6 +57,9 @@ struct d2_ctx {
     size_t ntoks;
     struct d2_tok* toks;
 
+    //return results    
+    struct d2_ret retlist_first;
+
     size_t nexps;
     struct d2_exp* exps;//dynamic array
 
@@ -64,6 +72,8 @@ struct d2_ctx {
 };
 
 struct d2_handle {
+
+    struct d2_conf conf;
 
 	pthread_mutex_t ctxlist_mx;
 	struct d2_ctx *ctxlist_first, *ctxlist_last, *ctx;

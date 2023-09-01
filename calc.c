@@ -2,7 +2,9 @@
 #include "d2.h"
 
 //TODO: temporary, replace
-#define d2_perr(handle, fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
+#define d2_perr(handle, fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
+#define __dm_calc(handle, fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
+#define __dm_enum(handle, fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
 
 extern e13_t __d2_pop_tok(struct d2_exp* exp, struct d2_tok** tok);
 extern void __d2_push_tok(struct d2_exp* exp, struct d2_tok* tok);
@@ -36,6 +38,8 @@ e13_t d2_run_pre(struct d2_ctx* ctx, struct d2_exp* exp){
 	enumtok = exp->prefix_tok_first;
 
 	while(enumtok){
+
+        __dm_enum(NULL, "enum: %s\n", enumtok->rec.data);
 		
 		switch(enumtok->rec.code){
 
@@ -309,19 +313,23 @@ e13_t d2_run_pre(struct d2_ctx* ctx, struct d2_exp* exp){
             break;
 
             case TOK_ASSIGN:
+            __dm_calc(h, "%s\n","assignment got!");
 			if(__d2_pop_tok(exp, &poptok1) != E13_OK || __d2_pop_tok(exp, &poptok2) != E13_OK){
+                __dm_calc(h, "%s\n","not enough tokens!");
 				d2_perr(NULL, "%s\n", "syntax error");
 				return e13_error(E13_SYNTAX);
 			} else {
-                if((err=__d2_tok_val(ctx, poptok1, &val1)) != E13_OK) return err;
-                if((err=d2_assign_var(ctx, poptok2, &val1)) != E13_OK) return err;
-                __d2_assign_tok_val(ctx, poptok1, 1.0);
+                if((err=__d2_tok_val(ctx, poptok2, &val2)) != E13_OK) return err;
+                if((err=d2_assign_var(ctx, poptok1, &val2)) != E13_OK) return err;
+                __d2_assign_tok_val(ctx, poptok1, val2);
 				__d2_push_tok(exp, poptok1);
 			}
             break;
 
 
 			case TOK_NUMBER:
+            case TOK_STRING:
+            case TOK_VAR:
 			__d2_push_tok(exp, enumtok);
 			break;
 

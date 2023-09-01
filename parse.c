@@ -83,7 +83,7 @@ e13_t d2_expize(struct d2_exp* parent, struct d2_tok* toklist_first, struct d2_e
 		}
 		if(!tok->next) (*exps)[*nexp].infix_tok_last = tok;
 		tok = tok->next;        
-	}//while(tok)    	
+	}//while(tok)
 
 	return E13_OK;
 }

@@ -3,8 +3,11 @@
 #include "error13.h"
 #include "d2.h"
 
+#define dm_var1(fmt, ...) fprintf(stderr, fmt, __VA__ARGS__)
+
 e13_t d2_var_val(struct d2_ctx* ctx, char* name, long double* val){
     struct d2_var* var;
+    dm_var1("getting varval of %s\n", name);
     for(var = ctx->var_list_first; var; var = var->next){
         if(!strcmp(var->name, name)){
             *val = var->val;
@@ -28,6 +31,8 @@ e13_t __d2_set_var(struct d2_ctx* ctx, char* name, long double val){
 e13_t d2_assign_var(struct d2_ctx* ctx, struct d2_tok* tok, long double* val){
     
     struct d2_var* var;
+
+    dm_var1("assign var %s\n", tok->rec.data);
 
     if(__d2_set_var(ctx, tok->rec.data, *val) == E13_OK) return E13_OK;
 

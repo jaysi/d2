@@ -4,8 +4,10 @@
 #include <sys/types.h>
 #include "lib13.h"
 
+#define DEF_IN_BUFSIZE  1024
 #define DEF_EXP_BUFSIZE	1024
 #define DEF_TOK_BUFSIZE	128
+#define DEF_NAME_BUFSIZE    128
 #define DEF_NHIST       20
 #define DEF_EXP_FLAGS	0
 #define DEF_MAX_HIST    DEF_HIST*10
@@ -24,6 +26,8 @@
 #define MAXNUMLEN 21
 
 struct d2_conf {
+    size_t in_bufsize;
+    size_t name_bufsize;
 	size_t exp_bufsize;
 	size_t tok_bufsize;
 	size_t nhistory;
