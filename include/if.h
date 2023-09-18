@@ -10,14 +10,13 @@
 extern "C" {
 #endif
 
-e13_t d2_init_if(struct d2_handle* h, FILE* fin, FILE* fout);
-void d2_destroy_if(struct d2_handle* h);
-e13_t d2_print(struct d2_handle* h, char* fmt, ...);
+	e13_t d2_init_if(struct d2_handle *h, FILE * fin, FILE * fout);
+	void d2_destroy_if(struct d2_handle *h);
+	e13_t d2_print(struct d2_handle *h, char *fmt, ...);
 
 #define d2pr d2_print
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif//D2_IF_H
+#endif				//D2_IF_H

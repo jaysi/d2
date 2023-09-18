@@ -8,7 +8,7 @@
 #define d2_blocklist "{}"
 #define d2_brlist "()"
 #define d2_logiclist "<>!=\"\'{}"
-#define d2_delimlist ",~$[](){}<>!=&|?:+-*/^%;"WHITESPACES//with whitespaces
+#define d2_delimlist ",~$[](){}<>!=&|?:+-*/^%;"WHITESPACES	//with whitespaces
 //#define d2_delimlist ",~$[](){}<>!=&|?:+-*/^%\"\';"//without whitespaces
 #define d2_packlist "\"\'"
 #define d2_escape '\\'
@@ -20,13 +20,13 @@
 #define d2_pack2 '\''
 
 // struct d2_tok {
-// 	size_t bufsize;
-// 	char* buf;
-	
-// 	d2_tok_t tok_t;
+//      size_t bufsize;
+//      char* buf;
+
+//      d2_tok_t tok_t;
 //     fnum_t fval;
-	
-// 	struct d2_tok* 	next, *prefix_next;
+
+//      struct d2_tok*  next, *prefix_next;
 // };
 
 /*
@@ -107,7 +107,7 @@ Associativity specification is redundant for unary operators and is only shown f
 
 typedef enum {
 	TOK_EMPTY,
-	
+
 	//100
 	TOK_PAREN_OPEN,
 	TOK_PAREN_CLOSE,
@@ -126,7 +126,7 @@ typedef enum {
 	TOK_MULT,
 	TOK_DIV,
 	TOK_REMAIN,
-	
+
 	//400
 	TOK_ADD,
 	TOK_SUB,
@@ -161,7 +161,7 @@ typedef enum {
 	TOK_LOGIC_OR,
 
 	//1300
-	TOK_TERN_COND,//?:
+	TOK_TERN_COND,		//?:
 
 	//1400
 	TOK_ASSIGN,
@@ -178,44 +178,44 @@ typedef enum {
 
 	//1500
 	TOK_COMMA,
-    TOK_SEMICOLON,
+	TOK_SEMICOLON,
 
 	//1600 -- block
 	TOK_BLOCK_OPEN,
 	TOK_BLOCK_CLOSE,
 
-    // -- access
-    TOK_ACCESS,
+	// -- access
+	TOK_ACCESS,
 
-    // -- math functions will implement as mods
+	// -- math functions will implement as mods
 
-    //1700 -- flow control c keywords
-    TOK_IF,
-    TOK_ELSE,
-    TOK_ELSE_IF,
-    TOK_SWITCH,
-    TOK_CASE,
-    TOK_DEFAULT,
-    TOK_DO,
-    TOK_WHILE,
-    TOK_BREAK,
-    TOK_CONTINUE,
-    TOK_FOR,
-    TOK_GOTO,
-    TOK_RETURN,
+	//1700 -- flow control c keywords
+	TOK_IF,
+	TOK_ELSE,
+	TOK_ELSE_IF,
+	TOK_SWITCH,
+	TOK_CASE,
+	TOK_DEFAULT,
+	TOK_DO,
+	TOK_WHILE,
+	TOK_BREAK,
+	TOK_CONTINUE,
+	TOK_FOR,
+	TOK_GOTO,
+	TOK_RETURN,
 
-    TOK_LABEL,
-    
-    //1900 -- scripting
-    TOK_THREAD,
-    TOK_EXIT,    
+	TOK_LABEL,
 
-    TOK_SYS,
+	//1900 -- scripting
+	TOK_THREAD,
+	TOK_EXIT,
 
-    TOK_PRINT,
+	TOK_SYS,
+
+	TOK_PRINT,
 
 	//OPERANDS
-    TOK_NUMBER,
+	TOK_NUMBER,
 	TOK_STRING,
 	TOK_BLOB,
 
@@ -223,35 +223,37 @@ typedef enum {
 	TOK_VAR,
 
 	//FUNCTIONS
-    TOK_KEYWORD,
+	TOK_KEYWORD,
 	TOK_FN,
-	
+
 	TOK_INVAL
 } d2_tok_enum;
 
 #define TOK_OO_LIMMIT   TOK_NUMBER
 
 struct d2_rec {
-	uint16_t code;//written to disk in network byte order
-	char* data;//also written to disk! nbo in short, long, long long and float
+	uint16_t code;		//written to disk in network byte order
+	char *data;		//also written to disk! nbo in short, long, long long and float
 };
 
 struct d2_tok {
-    //long long ival;
-    long double dval;
+	//long long ival;
+	long double dval;
 	struct d2_rec rec;
-	struct d2_tok* next, *prev;
-    struct d2_tok* blockend;//if set means this tok is blockbegin
-    struct d2_tok* prefix_next, *prefix_prev;//prefix handler
-    struct d2_tok* stack_next;
-    struct d2_tok* ret_next;
+	struct d2_tok *next, *prev;
+	struct d2_tok *blockend;	//if set means this tok is blockbegin
+	struct d2_tok *prefix_next, *prefix_prev;	//prefix handler
+	struct d2_tok *stack_next;
+	struct d2_tok *ret_next;
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-char* __d2_token(char* start, char delim[], char esc, char pack1, char pack2);
-size_t __d2_estimate_ntokens(char* start, char delim[], char esc, char pack1, char pack2);
+	char *__d2_token(char *start, char delim[], char esc, char pack1,
+			 char pack2);
+	size_t __d2_estimate_ntokens(char *start, char delim[], char esc,
+				     char pack1, char pack2);
 /*
 e13_t d2_tokenize(struct d2_handle* h);
 e13_t d2_lexer;
@@ -262,5 +264,4 @@ e13_t d2_parse;
 #ifdef __cplusplus
 }
 #endif
-
-#endif //D2_TOKEN_H
+#endif				//D2_TOKEN_H

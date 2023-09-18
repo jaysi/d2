@@ -4,4 +4,4 @@
 typedef long double fnum_t;
 typedef long long inum_t;
 
-#endif //D2_TYPES_H
+#endif				//D2_TYPES_H

@@ -14,13 +14,13 @@
 #define EVARDESC	"e number"
 #define CLIPVARDESC	"clipboard contents"
 
-struct d2_var{
+struct d2_var {
 	char flags;
-	char* name;
-	char* desc;
+	char *name;
+	char *desc;
 	size_t nrec;
-	struct d2_rec* rectab;//all vars are arrays!
-	struct d2_var* next;
+	struct d2_rec *rectab;	//all vars are arrays!
+	struct d2_var *next;
 };
 
-#endif //D2_VAR_H
+#endif				//D2_VAR_H

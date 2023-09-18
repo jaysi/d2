@@ -11,4 +11,4 @@
 #define d2_lock_stream(h)   MACRO( pthread_mutex_lock((h)->stream_mx); )
 #define d2_unlock_stream(h)   MACRO( pthread_mutex_unlock((h)->stream_mx); )
 
-#endif //D2_LOCK_H
+#endif				//D2_LOCK_H

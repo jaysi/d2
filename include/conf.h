@@ -26,8 +26,8 @@
 #define MAXNUMLEN 21
 
 struct d2_conf {
-    size_t in_bufsize;
-    size_t name_bufsize;
+	size_t in_bufsize;
+	size_t name_bufsize;
 	size_t exp_bufsize;
 	size_t tok_bufsize;
 	size_t nhistory;
@@ -37,10 +37,9 @@ struct d2_conf {
 extern "C" {
 #endif
 
-e13_t d2_load_conf(struct d2_conf* conf, char* filename);
+	e13_t d2_load_conf(struct d2_conf *conf, char *filename);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif//D2_CONF_H
+#endif				//D2_CONF_H

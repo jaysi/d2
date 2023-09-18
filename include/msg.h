@@ -94,7 +94,6 @@
 						"  this may change in future versions, however!"\
 						PARAEND
 
+#define NOVAREXP ""
 
-#define NOVAREXP ""         
-
-#endif //D2_MSG_H
+#endif				//D2_MSG_H
