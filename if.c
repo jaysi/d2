@@ -141,6 +141,7 @@ void d2_console_if(struct d2_handle *h)
 	struct d2_ctx *ctx;
 	char *arg1, *arg2, *argtmp;
 
+  //init input buffer for interface
 	buf = (char *)malloc(h->conf.in_bufsize + 1);
 	if (!buf) {
 		d2_emsg(h, "%s", "out of memmory\n");

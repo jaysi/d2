@@ -10,7 +10,7 @@ extern "C" {
 	e13_t d2_tokenize(char *buf, size_t bufsize,
 			  struct d2_tok **toklist_first, size_t *ntok);
 	e13_t d2_combine(struct d2_tok *toklist_first);
-	e13_t d2_lex(struct d2_tok *tok);
+	e13_t d2_lex(struct d2_tok *tok);i
 	struct d2_tok *d2_blockize(struct d2_tok *first);
 	e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
 			struct d2_exp **exps, size_t *nexp);
@@ -21,13 +21,15 @@ extern "C" {
 }
 #endif
 void d2_lock_ctx(struct d2_handle *h)
-{
+{	
+  //TODO
 	do {
 	} while (0);
 }
 
 void d2_unlock_ctx(struct d2_handle *h)
 {
+  //TODO
 	do {
 	} while (0);
 }
@@ -43,7 +45,6 @@ e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 	while (ctx) {
 		if (!strcmp(ctx->name, name))
 			break;
-		prev = ctx;
 		ctx = ctx->next;
 	}
 
@@ -51,8 +52,9 @@ e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 
 		if (ctx == h->ctxlist_first) {
 			h->ctxlist_first = h->ctxlist_first->next;
+      h->ctxlist_first->prev = NULL;
 		} else {
-			prev->next = ctx->next;
+			ctx->prev->next = ctx->next;
 		}
 
 		d2_unlock_ctx(h);
@@ -72,6 +74,8 @@ e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 		}
 		free(ctx);
 
+    return E13_OK;
+
 	} else
 		d2_unlock_ctx(h);
 
@@ -83,20 +87,17 @@ e13_t d2_find_ctx(struct d2_handle *h, char *name)
 {
 
 	struct d2_ctx *ctx;
-	int found = 0;
 
 	d2_lock_ctx(h);
 	ctx = h->ctxlist_first;
 	while (ctx) {
-		if (!strcmp(ctx->name, name)) {
-			found = 1;
+		if (!strcmp(ctx->name, name)) 
 			break;
-		}
 		ctx = ctx->next;
 	}
 	d2_unlock_ctx(h);
 
-	return found ? E13_OK : e13_error(E13_NOTFOUND);
+	return ctx ? E13_OK : e13_error(E13_NOTFOUND);
 
 }
 
@@ -120,14 +121,17 @@ e13_t d2_new_ctx(struct d2_handle *h, char *name)
 	ctx->exps = NULL;
 	ctx->toks = NULL;
 	ctx->next = NULL;
-
+  ctx->h = h;
+	ctx->retlist_first.tok.rec.code = TOK_EMPTY;
 	strcpy(ctx->name, name);
 
 	d2_lock_ctx(h);
 	if (!h->ctxlist_first) {
+    ctx->prev = NULL;
 		h->ctxlist_first = ctx;
-		h->ctxlist_last = ctx;
+		h->ctxlist_last = ctx;  
 	} else {
+    ctx->prev = h->ctxlist_last;
 		h->ctxlist_last->next = ctx;
 		h->ctxlist_last = ctx;
 	}
@@ -153,7 +157,7 @@ e13_t d2_set_ctx_buf(struct d2_handle *h, char *name, char *buf, size_t bufsize,
 
 	if (!ctx) {
 		d2_unlock_ctx(h);
-		return e13_error(E13_NOMEM);
+		return e13_error(E13_NOTFOUND);
 	}
 
 	if (ctx->exps) {
@@ -162,12 +166,17 @@ e13_t d2_set_ctx_buf(struct d2_handle *h, char *name, char *buf, size_t bufsize,
 	}
 
 	ctx->bufsize = bufsize;
-	ctx->flags = flags;
 
 	if (flags & D2_CTXF_COPY_BUF) {
 		ctx->buf = (char *)malloc(bufsize);
+    if(!ctx->buf){
+      d2_unlock_ctx(h);
+      return e13_error(E13_NOMEM);
+    }
+    ctx->flags |= D2_CTXF_COPY_BUF;
 		memcpy(ctx->buf, buf, bufsize);
 	} else {
+    ctx->flags &= ~D2_CTXF_COPY_BUF;
 		ctx->buf = buf;
 	}
 	d2_unlock_ctx(h);
