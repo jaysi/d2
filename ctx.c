@@ -2,6 +2,7 @@
 
 #include "error13.h"
 #include "d2.h"
+#include "lock.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,19 +21,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-void d2_lock_ctx(struct d2_handle *h)
-{	
-  //TODO
-	do {
-	} while (0);
-}
-
-void d2_unlock_ctx(struct d2_handle *h)
-{
-  //TODO
-	do {
-	} while (0);
-}
 
 e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 {
@@ -49,6 +37,11 @@ e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 	}
 
 	if (ctx) {
+
+    if(ctx->flags & D2_CTXF_RUNNING){
+      d2_unlock_ctx(h);
+      return e13_error(E13_BUSY);
+    }
 
 		if (ctx == h->ctxlist_first) {
 			h->ctxlist_first = h->ctxlist_first->next;
@@ -103,6 +96,11 @@ e13_t d2_find_ctx(struct d2_handle *h, char *name)
 
 e13_t d2_new_ctx(struct d2_handle *h, char *name)
 {
+  //avoid white space names
+  for(int i = 0; i < strlen(name); i++){
+    if(!isspace(name[i])) break;
+  }
+  if(i == strlen(name)) return e13_error(E13_FORMAT);
 
 	if (d2_find_ctx(h, name) == E13_OK)
 		return e13_error(E13_EXISTS);
@@ -160,6 +158,10 @@ e13_t d2_set_ctx_buf(struct d2_handle *h, char *name, char *buf, size_t bufsize,
 		return e13_error(E13_NOTFOUND);
 	}
 
+  if(ctx->flags & D2_CTXF_RUNNING){
+    d2_unlock_ctx(h);
+    return e13_error(E13_BUSY);
+  }
 	if (ctx->exps) {
 		d2_unlock_ctx(h);
 		return e13_error(E13_EXISTS);
@@ -202,6 +204,11 @@ e13_t d2_rst_ctx(struct d2_handle *h, char *name)
 		return e13_error(E13_NOTFOUND);
 	}
 
+  if(ctx->flags & D2_CTXF_RUNNING){
+    d2_unlock_ctx(h);
+    return e13_error(E13_BUSY);
+  }
+
 	if (ctx->flags & D2_CTXF_COPY_BUF && ctx->buf)
 		free(ctx->buf);
 	if (ctx->exps)
@@ -212,6 +219,7 @@ e13_t d2_rst_ctx(struct d2_handle *h, char *name)
 	ctx->exps = NULL;
 	ctx->toks = NULL;
 	ctx->buf = NULL;
+  ctx->flags = D2_CTXF_INIT;
 	ctx->retlist_first.tok.rec.code = TOK_EMPTY;
 
 	d2_unlock_ctx(h);
@@ -239,6 +247,14 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 		d2_unlock_ctx(h);
 		return e13_error(E13_NOTFOUND);
 	}
+  //check for running flag
+  if(ctx->flag & D2_CTXF_RUNNING){
+    d2_unlock_ctx(h);
+    return e13_error(E13_BUSY);
+  }
+  //set running flag
+  ctx->flags |= D2_CTXF_RUNNING
+  d2_unlock_ctx(h);
 
 	if (!ctx->exps) {	//not compiled
 
@@ -259,24 +275,34 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 				ctx->nexps = nexp;
 				ctx->exps = exps;
 			} else
+        d2_lock_ctx(h);
+        ctx->flags &= ~D2_CTXF_RUNNING;
+        d2_unlock_ctx(h);
 				return err;
-		} else {
-			d2_unlock_ctx(h);
+		} else {//did not tokenize well!
+      d2_lock_ctx(h);
+      ctx->flags &= ~D2_CTXF_RUNNING;
+    	d2_unlock_ctx(h);
 			return err;
 		}
 
 		for (ntok = 0; ntok < nexp; ntok++) {
 			if ((err = d2_infix2prefix(exps + ntok)) != E13_OK) {
-				d2_unlock_ctx(h);
+        d2_lock_ctx(h);
+        ctx->flags &= ~D2_CTXF_RUNNING;
+      	d2_unlock_ctx(h);
 				return err;
 			}
 		}
 
-	}
+	}//end of compile block
+
 	//now compiled, run!
 	for (ntok = 0; ntok < nexp; ntok++) {
 		if ((err = d2_run_pre(ctx, exps + ntok)) != E13_OK) {
-			d2_unlock_ctx(h);
+      d2_lock_ctx(h);
+      ctx->flags &= ~D2_CTXF_RUNNING;
+	    d2_unlock_ctx(h);
 			return err;
 		}
 	}
@@ -287,6 +313,8 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 	ctx->retlist_first.tok.rec.data =
 	    ctx->exps[nexp - 1].stack_top->rec.data;
 
+  d2_lock_ctx(h);
+  ctx->flags &= ~D2_CTXF_RUNNING;
 	d2_unlock_ctx(h);
 
 	return E13_OK;

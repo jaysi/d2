@@ -13,6 +13,8 @@
 #define EOL	"\n"
 #endif
 
+#define TODO_PROMPT() fprintf(stderr, "TODO: %s-%s\n", __FILENAME__, __func__)
+
 #define NOTSET "N/A"
 #define ANSDESC "Last answer"
 

@@ -43,8 +43,10 @@ struct d2_ret {
 
 struct d2_handle;
 
+#define D2_CTXF_INIT        (0x00)
 #define D2_CTXF_COPY_BUF    (0x01<<0)
 #define D2_CTXF_LOCKED      (0x01<<1)
+#define D2_CTXF_RUNNING     (0x01<<2)
 
 struct d2_ctx {
 

@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include "d2.h"
 #include "if.h"
+#include "lock.h"
 
 #undef TEST_TOKENIZE
 
@@ -28,9 +29,6 @@ extern "C" {
 			struct d2_exp **exps, size_t *nexp);
 	e13_t d2_infix2prefix(struct d2_exp *exp);
 	e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
-
-	void d2_lock_ctx(struct d2_handle *h);
-	void d2_unlock_ctx(struct d2_handle *h);
 
 #ifdef __cplusplus
 }
