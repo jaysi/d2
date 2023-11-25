@@ -162,7 +162,7 @@ void d2_console_if(struct d2_handle *h)
 		while (isspace(*(arg1)))
 			arg1++;
 		argtmp = arg1;
-		while (!isspace(*(argtmp)))
+		while (*argtmp && !isspace(*(argtmp)))
 			argtmp++;
 		*argtmp = 0;
 		arg2 = argtmp + 1;

@@ -2,6 +2,7 @@ LINKLIBS = -lpthread -lm -l13
 CFLAGS = -Wall -Winline -pedantic
 release: CFLAGS += -O2 -DNDEBUG -L$(HOME)/prj/lib13/release
 debug: CFLAGS += -g -L$(HOME)/prj/lib13/debug
+memchk: LINKLIBS += -lefence
 INCLUDE_PATH = -I$(HOME)/prj/lib13/include -I$(HOME)/prj/d2/include
 LIB_PATH = 
 CFLAGS += $(INCLUDE_PATH)
@@ -28,6 +29,8 @@ release: d2
 debug: d2
 	$(MV) d2 debug/
 	$(info *** put executable in debug/ ; 'make clean' before 'make release' ***)
+
+memchk: debug
 
 clean:
 	$(RM) *.o obj/* *.*~ *~

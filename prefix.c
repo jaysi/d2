@@ -22,7 +22,7 @@ __d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1, struct d2_tok **tok2)
 {
 
 	//dm_pre_pop("pop exp->stacktop = %s (will update)\n", !exp->stack_top?"NULL":exp->stack_top->rec.data);
-	if (!exp->stack_top || !exp->stack_top->stack->next)
+	if (!exp->stack_top || !exp->stack_top->stack_next)
 		return e13_error(E13_EMPTY);
 	*tok1 = exp->stack_top;
 	exp->stack_top = exp->stack_top->stack_next;

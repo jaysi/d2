@@ -1,5 +1,5 @@
 #include <string.h>
-
+#include <ctype.h>
 #include "error13.h"
 #include "d2.h"
 #include "lock.h"
@@ -11,7 +11,7 @@ extern "C" {
 	e13_t d2_tokenize(char *buf, size_t bufsize,
 			  struct d2_tok **toklist_first, size_t *ntok);
 	e13_t d2_combine(struct d2_tok *toklist_first);
-	e13_t d2_lex(struct d2_tok *tok);i
+	e13_t d2_lex(struct d2_tok *tok);
 	struct d2_tok *d2_blockize(struct d2_tok *first);
 	e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
 			struct d2_exp **exps, size_t *nexp);
@@ -25,7 +25,7 @@ extern "C" {
 e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 {
 
-	struct d2_ctx *ctx, *prev;
+	struct d2_ctx *ctx;
 	struct d2_var *var;
 
 	d2_lock_ctx(h);
@@ -45,7 +45,7 @@ e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 
 		if (ctx == h->ctxlist_first) {
 			h->ctxlist_first = h->ctxlist_first->next;
-      h->ctxlist_first->prev = NULL;
+      if(h->ctxlist_first) h->ctxlist_first->prev = NULL;
 		} else {
 			ctx->prev->next = ctx->next;
 		}
@@ -96,8 +96,9 @@ e13_t d2_find_ctx(struct d2_handle *h, char *name)
 
 e13_t d2_new_ctx(struct d2_handle *h, char *name)
 {
+  int i;
   //avoid white space names
-  for(int i = 0; i < strlen(name); i++){
+  for(i = 0; i < strlen(name); i++){
     if(!isspace(name[i])) break;
   }
   if(i == strlen(name)) return e13_error(E13_FORMAT);
@@ -248,12 +249,12 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 		return e13_error(E13_NOTFOUND);
 	}
   //check for running flag
-  if(ctx->flag & D2_CTXF_RUNNING){
+  if(ctx->flags & D2_CTXF_RUNNING){
     d2_unlock_ctx(h);
     return e13_error(E13_BUSY);
   }
   //set running flag
-  ctx->flags |= D2_CTXF_RUNNING
+  ctx->flags |= D2_CTXF_RUNNING;
   d2_unlock_ctx(h);
 
 	if (!ctx->exps) {	//not compiled
