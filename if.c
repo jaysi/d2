@@ -138,6 +138,7 @@ void d2_console_if(struct d2_handle *h)
 	char *buf;
 	struct d2_ctx *ctx;
 	char *arg1, *arg2, *argtmp;
+  e13_t er;
 
   //init input buffer for interface
 	buf = (char *)malloc(h->conf.in_bufsize + 1);
@@ -179,11 +180,16 @@ void d2_console_if(struct d2_handle *h)
 			break;
 
 		case 'c':
-			d2_new_ctx(h, arg1);
-			d2_rst_ctx(h, arg1);
-			d2_set_ctx_buf(h, arg1, arg2, strlen(arg2) + 1,
+      //arg1 & arg2 are ok, checked that
+			er = d2_new_ctx(h, arg1);
+        if(er != E13_OK) { d2_print(h, "failed to create new context '%s' (code=%i)\n", arg1, er); break; }
+			er = d2_rst_ctx(h, arg1);
+        if(er != E13_OK) { d2_print(h, "failed to reset context '%s' (code=%i)\n", arg1, er); break; }
+			er = d2_set_ctx_buf(h, arg1, arg2, strlen(arg2) + 1,
 				       D2_CTXF_COPY_BUF);
-			d2_run_ctx(h, arg1);
+        if(er != E13_OK) { d2_print(h, "failed to set context buffer '%s' to '%s' (code=%i)\n", arg1, arg2, er); break; }
+			er = d2_run_ctx(h, arg1);
+        if(er != E13_OK) { d2_print(h, "failed to run context '%s' (code=%i)\n", arg1, er); break; }
 			__d2_print_ctx(h, arg1);
 			break;
 
@@ -254,7 +260,7 @@ void d2_console_if(struct d2_handle *h)
 			break;
 
 		case 'u':
-			switch (d2_run_ctx(h, arg1)) {
+			switch (er = d2_run_ctx(h, arg1)) {
 			case E13_OK:
 				d2_print(h, "%s",
 					 "ok, next try 'p' to print results\n");
@@ -263,7 +269,7 @@ void d2_console_if(struct d2_handle *h)
 				d2_emsg(h, "%s", "not found\n");
 				break;
 			default:
-				d2_emsg(h, "%s", "system error\n");
+				d2_emsg(h, "system error (code = %i)\n", er);
 				break;
 			}
 			break;
@@ -279,7 +285,7 @@ void d2_console_if(struct d2_handle *h)
 				if (!strcmp(ctx->name, arg1)) {
 					d2_print(h, "buffer:\n%s\n",
 						 ctx->
-						 exps ? ctx->buf : "EMPTY");
+						 buf ? ctx->buf : "EMPTY");
 					break;
 				}
 				ctx = ctx->next;

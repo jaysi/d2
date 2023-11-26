@@ -70,12 +70,14 @@ e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
 	while (tok) {
 		switch (tok->rec.code) {
 		case TOK_SEMICOLON:
-		case TOK_LABEL:
+		case TOK_LABEL:    
 			(*exps)[*nexp].infix_tok_last = tok;
-			assert(*nexp < nexp_est);
-			(*nexp)++;
-			(*exps)[*nexp].infix_tok_first = tok->next;
-			(*exps)[*nexp].ntok = 1UL;
+      if(tok->next){
+			  assert(*nexp < nexp_est-1);
+  			(*nexp)++;
+	  		(*exps)[*nexp].infix_tok_first = tok->next;
+		  	(*exps)[*nexp].ntok = 1UL;
+      }
 			break;
 		default:
 			/*           

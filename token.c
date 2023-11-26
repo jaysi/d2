@@ -8,7 +8,7 @@
 #define dm(fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok1(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok2(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
-#define dm_tok3(fmt, ...)
+#define dm_tok3(fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
 
 /*
 	source code shape:

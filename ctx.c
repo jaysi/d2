@@ -116,7 +116,9 @@ e13_t d2_new_ctx(struct d2_handle *h, char *name)
 		return e13_error(E13_NOMEM);
 	}
 
+  ctx->flags = D2_CTXF_INIT;
 	ctx->var_list_first = NULL;
+  ctx->buf = NULL;
 	ctx->exps = NULL;
 	ctx->toks = NULL;
 	ctx->next = NULL;
@@ -128,7 +130,7 @@ e13_t d2_new_ctx(struct d2_handle *h, char *name)
 	if (!h->ctxlist_first) {
     ctx->prev = NULL;
 		h->ctxlist_first = ctx;
-		h->ctxlist_last = ctx;  
+		h->ctxlist_last = ctx; 
 	} else {
     ctx->prev = h->ctxlist_last;
 		h->ctxlist_last->next = ctx;
@@ -163,7 +165,7 @@ e13_t d2_set_ctx_buf(struct d2_handle *h, char *name, char *buf, size_t bufsize,
     d2_unlock_ctx(h);
     return e13_error(E13_BUSY);
   }
-	if (ctx->exps) {
+	if (ctx->buf) {
 		d2_unlock_ctx(h);
 		return e13_error(E13_EXISTS);
 	}
