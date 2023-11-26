@@ -1,0 +1,12 @@
+# open all project files
+nvim $(<lst)
+
+# git push
+git status
+git add/rm <files>
+git commit -m '<message>'
+git push -u 'https://github.com/jaysi/d2'
+
+# git clone
+git clone 'https://github.com/jaysi/d2'
+
