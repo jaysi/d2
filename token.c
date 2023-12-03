@@ -8,7 +8,7 @@
 #define dm(fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok1(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok2(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
-#define dm_tok3(fmt, ...) //fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_tok3(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 
 /*
 	source code shape:
@@ -266,7 +266,7 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 						    && toktmp->rec.data[0] ==
 						    d2_tok_form[tok_enum].form
 						    [j])
-							toktmp = toktmp->next;						
+							toktmp = toktmp->next;
 						else
 							break;
 					}
@@ -337,9 +337,13 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 								    TOK_NUMBER;
 								sprintf(tok->rec.data, "%s%s%s", tok->rec.data, tok->next->rec.data, toktmp->rec.data);	//TODO: ugly!
 								tok->next =
-								    toktmp->next;
-								if (toktmp->next) {
-									toktmp->next->prev
+								    toktmp->
+								    next;
+								if (toktmp->
+								    next) {
+									toktmp->
+									    next->
+									    prev
 									    =
 									    tok;
 								}
@@ -407,7 +411,7 @@ e13_t d2_tokenize(char *buf, size_t bufsize, struct d2_tok **toklist_first,
 			tok = &toks[(*ntok)++];
 			tok->next = NULL;
 			tok->blockend = NULL;
-			tok->prev = NULL;//no need, will set later
+			tok->prev = NULL;	//no need, will set later
 
 			memcpy(tokbuf, start, len);
 

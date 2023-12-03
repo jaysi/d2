@@ -33,7 +33,7 @@ debug: d2
 memchk: debug
 
 clean:
-	$(RM) *.o obj/* *.*~ *~
+	$(RM) *.o obj/* *.*~ *~ include/*~
 
 cleanall: clean
 	$(RM) release/* debug/*

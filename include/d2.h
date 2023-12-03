@@ -39,6 +39,7 @@ struct d2_var {
 
 struct d2_ret {
 	struct d2_tok tok;
+	struct d2_ret *next;
 };
 
 struct d2_handle;
@@ -46,7 +47,7 @@ struct d2_handle;
 #define D2_CTXF_INIT        (0x00)
 #define D2_CTXF_COPY_BUF    (0x01<<0)
 #define D2_CTXF_LOCKED      (0x01<<1)
-#define D2_CTXF_RUNNING     (0x01<<2)
+#define D2_CTXF_BUSY        (0x01<<2)
 
 struct d2_ctx {
 
@@ -60,7 +61,7 @@ struct d2_ctx {
 	struct d2_tok *toks;
 
 	//return results    
-	struct d2_ret retlist_first;
+	struct d2_ret *ret_list_first;
 
 	size_t nexps;
 	struct d2_exp *exps;	//dynamic array
