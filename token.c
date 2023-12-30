@@ -144,8 +144,10 @@ int __d2_tok_preced(d2_tok_enum code)
 	return d2_tok_form[code].preced;
 }
 
+//struct d2_tok* __d2_get_tok_ptr(struct )
+
 size_t __d2_estimate_ntokens(char *start,
-			     char delim[], char esc, char pack1, char pack2)
+				 char delim[], char esc, char pack1, char pack2)
 {
 	char *end, *d = delim;
 	char pack = 0;
@@ -226,7 +228,7 @@ e13_t d2_lex(struct d2_tok *tok)
 	char *endptr;
 
 	for (tokenum = TOK_EMPTY, form = d2_tok_form; form->form;
-	     form++, tokenum++) {
+		 form++, tokenum++) {
 
 		if (!strcmp(form->form, tok->rec.data)) {
 			tok->rec.code = tokenum;
@@ -239,8 +241,9 @@ e13_t d2_lex(struct d2_tok *tok)
 
 		//is digit? base10, hexa, scientific*
 		tok->dval = strtold(tok->rec.data, &endptr);
-
-		tok->rec.code = TOK_INVAL;
+		if(tok->dval == (long double)0 && endptr == tok->rec.data){//no conversion happened
+			tok->rec.code = TOK_INVAL;
+		} else tok->rec.code = TOK_NUMBER;
 	}
 
 	return E13_OK;
@@ -257,15 +260,15 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 	for (int i = 3; i > 1; i--) {
 		for (tok = toklist_first; tok; tok = tok->next) {
 			for (d2_tok_enum tok_enum = TOK_EMPTY;
-			     d2_tok_form[tok_enum].form; tok_enum++) {
+				 d2_tok_form[tok_enum].form; tok_enum++) {
 				if (strlen(d2_tok_form[tok_enum].form) == i) {
 					toktmp = tok;
 
 					for (j = 0; j < i; j++) {
 						if (toktmp
-						    && toktmp->rec.data[0] ==
-						    d2_tok_form[tok_enum].form
-						    [j])
+							&& toktmp->rec.data[0] ==
+							d2_tok_form[tok_enum].form
+							[j])
 							toktmp = toktmp->next;
 						else
 							break;
@@ -289,7 +292,7 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 	//resolve else if
 	for (tok = toklist_first; tok; tok = tok->next) {
 		if (tok->rec.code == TOK_ELSE && tok->next
-		    && tok->next->rec.code == TOK_IF) {
+			&& tok->next->rec.code == TOK_IF) {
 			tok->rec.code = TOK_ELSE_IF;
 			tok->next = tok->next->next;
 			strcpy(tok->rec.data, d2_tok_form[TOK_ELSE_IF].form);
@@ -298,10 +301,10 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 
 	//resolve label
 	if (toklist_first &&
-	    toklist_first->rec.code == TOK_STRING &&
-	    toklist_first->next &&
-	    toklist_first->next->rec.code == TOK_LABEL &&
-	    !toklist_first->next->next) {
+		toklist_first->rec.code == TOK_STRING &&
+		toklist_first->next &&
+		toklist_first->next->rec.code == TOK_LABEL &&
+		!toklist_first->next->next) {
 		toklist_first->rec.code = TOK_LABEL;
 		strcat(toklist_first->rec.data, toklist_first->next->rec.data);
 		toklist_first->next = NULL;
@@ -320,11 +323,11 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 					if (toktmp->rec.code == TOK_NUMBER) {
 						tok->rec.code = TOK_NUMBER;
 						strcat(tok->rec.data,
-						       toktmp->rec.data);
+							   toktmp->rec.data);
 						tok->next = toktmp->next;
 						if (toktmp->next) {
 							toktmp->next->prev =
-							    tok;
+								tok;
 						}
 						tok->dval = strtold(tok->rec.data, NULL);	//TODO: check for range errors
 					} else if (toktmp->rec.code == TOK_ADD
@@ -332,20 +335,20 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 						   TOK_SUB) {
 						if ((toktmp = toktmp->next)) {
 							if (toktmp->rec.code ==
-							    TOK_NUMBER) {
+								TOK_NUMBER) {
 								tok->rec.code =
-								    TOK_NUMBER;
+									TOK_NUMBER;
 								sprintf(tok->rec.data, "%s%s%s", tok->rec.data, tok->next->rec.data, toktmp->rec.data);	//TODO: ugly!
 								tok->next =
-								    toktmp->
-								    next;
-								if (toktmp->
-								    next) {
 									toktmp->
-									    next->
-									    prev
-									    =
-									    tok;
+									next;
+								if (toktmp->
+									next) {
+									toktmp->
+										next->
+										prev
+										=
+										tok;
 								}
 							}
 						}
@@ -359,67 +362,94 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 	return E13_OK;
 }
 
-e13_t d2_tokenize(char *buf, size_t bufsize, struct d2_tok **toklist_first,
-		  size_t *ntok)
+size_t __d2_get_toks_datasize(char* buf, size_t ntok){
+	return strlen(buf) + (ntok) + 1;
+}
+
+e13_t __d2_alloc_toks_buf(struct d2_tok** toks, size_t ntok, char** buf,
+						size_t bufsize){
+	*toks = (struct d2_tok*)malloc(ntok*sizeof(struct d2_tok));
+	if(!*toks) return e13_error(E13_NOMEM);
+	*buf = (char*)malloc(bufsize);
+	if(!*buf){
+		free(toks);
+		return e13_error(E13_NOMEM);
+	}
+
+	/*
+	for(int i = 0; i < ntok; i++){
+		//will not init tok(s) here! there is another loop in tokenize()
+	}
+	*/
+
+	return E13_OK;
+}
+
+struct d2_tok* __d2_get_tok(struct d2_tok* tok, size_t* n, int do_init){
+	struct d2_tok* ret_tok;
+	ret_tok = &tok[(*n)++];
+	if(do_init){
+		ret_tok->next = NULL;
+		ret_tok->prev = NULL;
+		ret_tok->blockend = NULL;
+	}
+	return ret_tok;
+}
+
+e13_t __d2_set_tokbuf(struct d2_tok* tok, char* buf, size_t size){
+	memcpy(tokbuf, start, len);
+
+	tok->rec.data = tokbuf;	//set before updating total
+
+	dm_tok2
+		("tokbuf = %s, len = %li, lentotal = %lu, tok = %p\n",
+			tokbuf, len, total, (void *)tok);
+
+	return E13_OK;
+}
+
+e13_t d2_tokenize(struct d2_ctx* ctx)
 {
 
 	struct d2_tok *toks, *tok, *toklist_last;
-	char *bufdata;
-	size_t bufdatasize;
 	char *start, *end;
 	size_t total;
 	struct d2_tok_form_s *form;
 
-	*ntok =
-	    __d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1,
+	ctx->ntok =
+		__d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1,
 				  d2_pack2);
 
-	dm_tok2("esttok = %lu\n", *ntok);
+	dm_tok2("esttok = %lu\n", ctx->ntok);    
 
-	//TODO: combine two malloc()s in one bigbuf : toks[]+bufdata
+	ctx->tokbufsize = __d2_get_toks_datasize(buf, ctx->ntok);
 
-	toks = (struct d2_tok *)malloc((*ntok) * sizeof(struct d2_tok));
-	if (!toks)
-		return e13_error(E13_NOMEM);
-
-	bufdatasize = strlen(buf) + (*ntok) + 1;
-	bufdata = (char *)malloc(bufdatasize);
-	if (!bufdata)
-		return e13_error(E13_NOMEM);
-
-	dm_tok2("bufsize = %lu\n", bufdatasize);
+	if(__d2_alloc_toks_buf(ctx->toks, ctx->ntok, ctx->tokbuf, ctx->tokbufsize) != E13_OK)
+		return e13_error(E13_NOMEM);    
 
 	//some init before the loop
-	*toklist_first = NULL;
-	start = buf;
-	*ntok = 0;
+	ctx->toks = NULL;
+	start = ctx->buf;
+	ctx->ntok = 0;
 	total = 0;
 	end = start;
 
 //defines to speed up things
 #define len (end - start + 1)
-#define tokbuf (bufdata + total)
+#define tokbuf (ctx->tokbuf + total)
 
 	while (*end) {
 		end =
-		    __d2_token(start, d2_delimlist, d2_escape, d2_pack1,
-			       d2_pack2);
+			__d2_token(start, d2_delimlist, d2_escape, d2_pack1,
+				   d2_pack2);
 		dm_tok2("start = %s, end = %s(%c)\n", start, end, end[0]);
 		if (*end && !isspace(*end)) {
 
 			//init tok ptr
-			tok = &toks[(*ntok)++];
-			tok->next = NULL;
-			tok->blockend = NULL;
-			tok->prev = NULL;	//no need, will set later
+			//tok = &toks[(ctx->ntok)++];
+			tok = __d2_get_tok(ctx->toks, ctx->ntok, 1);//!0 = do init
 
-			memcpy(tokbuf, start, len);
-
-			tok->rec.data = tokbuf;	//set before updating total
-
-			dm_tok2
-			    ("tokbuf = %s, len = %li, lentotal = %lu, tok = %p\n",
-			     tokbuf, len, total, (void *)tok);
+			__d2_set_tok_buf(tok, ctx->tokbuf, start, len);
 
 			total += len;	//update total
 			*(tokbuf) = 0;	//now total has been updated, terminate token buffer 
@@ -429,7 +459,7 @@ e13_t d2_tokenize(char *buf, size_t bufsize, struct d2_tok **toklist_first,
 
 			form = d2_tok_form;
 			for (d2_tok_enum tokenum = TOK_EMPTY; form->form;
-			     form++, tokenum++) {
+				 form++, tokenum++) {
 
 				dm_tok3("%s->%s\n", form->form, tok->rec.data);
 
@@ -437,7 +467,7 @@ e13_t d2_tokenize(char *buf, size_t bufsize, struct d2_tok **toklist_first,
 					tok->rec.code = tokenum;
 					break;
 				} else
-				    if ((tok->dval =
+					if ((tok->dval =
 					 strtold(tok->rec.data, NULL))) {
 					tok->rec.code = TOK_NUMBER;
 					break;
@@ -448,7 +478,7 @@ e13_t d2_tokenize(char *buf, size_t bufsize, struct d2_tok **toklist_first,
 				tok->rec.code = TOK_STRING;
 			}
 
-			dm_tok2("ntok = %li, data = %s, code = %i\n", *ntok,
+			dm_tok2("ntok = %li, data = %s, code = %i\n", ctx->ntok,
 				tok->rec.data, tok->rec.code);
 
 			//list assignment
