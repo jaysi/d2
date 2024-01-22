@@ -149,7 +149,7 @@ e13_t d2_new_ctx(struct d2_handle *h, char *name)
 
 	if (d2_find_ctx(h, name) == E13_OK)
 		return e13_error(E13_EXISTS);
-	i struct d2_ctx *ctx = (struct d2_ctx *)malloc(sizeof(struct d2_ctx));
+	struct d2_ctx *ctx = (struct d2_ctx *)malloc(sizeof(struct d2_ctx));
 	if (!ctx)
 		return e13_error(E13_NOMEM);
 
@@ -333,9 +333,9 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 	}
 
 	//TODO: ugliest thing!
-	ctx->retlist_first.tok.rec.code = TOK_NUMBER;
-	ctx->retlist_first.tok.dval = ctx->exps[nexp - 1].stack_top->dval;
-	ctx->retlist_first.tok.rec.data =
+	ctx->ret_list_first->tok.rec.code = TOK_NUMBER;
+	ctx->ret_list_first->tok.dval = ctx->exps[nexp - 1].stack_top->dval;
+	ctx->ret_list_first->tok.rec.data =
 	    ctx->exps[nexp - 1].stack_top->rec.data;
 
 	d2_unget_ctx(h, ctx);

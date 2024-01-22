@@ -91,25 +91,25 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 	struct d2_ctx *ctx = h->ctxlist_first;
 	while (ctx) {
 		if (!strcmp(ctx->name, arg1)) {
-			switch (ctx->retlist_first.tok.rec.code) {
+			switch (ctx->ret_list_first->tok.rec.code) {
 			case TOK_NUMBER:
 				d2_print(h, "return: %Lf\n",
-					 ctx->retlist_first.tok.dval);
+					 ctx->ret_list_first->tok.dval);
 				break;
 			case TOK_STRING:
 				d2_print(h, "return: %s\n",
-					 ctx->retlist_first.tok.rec.data);
+					 ctx->ret_list_first->tok.rec.data);
 				break;
 			case TOK_VAR:
 				d2_print(h, "return: %s = %Lf\n",
-					 ctx->retlist_first.tok.rec.data,
-					 ctx->retlist_first.tok.dval);
+					 ctx->ret_list_first->tok.rec.data,
+					 ctx->ret_list_first->tok.dval);
 				break;
 			default:
 				d2_print(h,
 					 "unknown type, return: %s, %Lf\n",
-					 ctx->retlist_first.tok.rec.data,
-					 ctx->retlist_first.tok.dval);
+					 ctx->ret_list_first->tok.rec.data,
+					 ctx->ret_list_first->tok.dval);
 				break;
 			}
 

@@ -396,7 +396,11 @@ struct d2_tok* __d2_get_tok(struct d2_tok* tok, size_t* n, int do_init){
 	return ret_tok;
 }
 
-e13_t __d2_set_tokbuf(struct d2_tok* tok, char* buf, size_t size){
+e13_t __d2_set_tok_buf(struct d2_ctx* ctx,
+                       struct d2_tok* tok,
+                       char* buf,
+                       size_t bufsize,
+                       size_t& total){
 	memcpy(tokbuf, start, len);
 
 	tok->rec.data = tokbuf;	//set before updating total
@@ -449,7 +453,7 @@ e13_t d2_tokenize(struct d2_ctx* ctx)
 			//tok = &toks[(ctx->ntok)++];
 			tok = __d2_get_tok(ctx->toks, ctx->ntok, 1);//!0 = do init
 
-			__d2_set_tok_buf(tok, ctx->tokbuf, start, len);
+			__d2_set_tok_buf(ctx, tok, ctx->tokbuf, start, len);
 
 			total += len;	//update total
 			*(tokbuf) = 0;	//now total has been updated, terminate token buffer 
