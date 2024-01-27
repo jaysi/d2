@@ -396,15 +396,15 @@ int test_tokenize()
 						printf
 						    ("result of #%lu is %Lf\n",
 						     ntok,
-						     exps[ntok].stack_top->
-						     dval);
+						     exps[ntok].
+						     stack_top->dval);
 					}
 
 				} else {
 					printf
 					    ("infix2prefix fails here < %s >\n",
-					     exps[ntok].infix_tok_first->rec.
-					     data);
+					     exps[ntok].infix_tok_first->
+					     rec.data);
 				}
 			}
 
