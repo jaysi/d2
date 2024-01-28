@@ -1,8 +1,10 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <errno.h>
 #include "lib13.h"
 #include "token.h"
 #include "d2.h"
+#include "limmit.h"
 
 #define dm_loc() fprintf(stderr, "loc: %s.%s().%i", __FILE__, __FUNC__, __LINE__)
 #define dm(fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
@@ -13,11 +15,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-	size_t __d2_get_toks_datasize(char *buf, size_t ntok);
-	e13_t __d2_alloc_toks_buf(struct d2_tok **toks, size_t ntok, char **buf,
-				  size_t bufsize);
-
+//define mem/alltok_list_first = NULL;e
+e13_t __d2_skip_tok(struct d2_ctx* ctx, struct d2_tok* tok);
+e13_t __d2_realloc_tok_buf(struct d2_tok* tok, char* data, size_t datasize, int free_old_data);
+struct d2_tok *__d2_enumset_tok_buf(struct d2_ctx *ctx, char *data, size_t datasize);
+e13_t __d2_alloc_tok_databuf_pool(struct d2_ctx *ctx, size_t bufsize);
+e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok);
+e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf);
+size_t __d2_get_tok_databuf_poolsize(char *buf, size_t ntok);
 #ifdef __cplusplus
 }
 #endif
@@ -262,9 +267,8 @@ e13_t d2_lex(struct d2_tok *tok)
 e13_t d2_combine(struct d2_tok *toklist_first)
 {
 	struct d2_tok *tok, *toktmp;
-	size_t l;
-	char c;
 	int j;
+  char sci_num[D2_MAX_SCI_NUM];
 
 	//1. resolve combo operators
 	for (int i = 3; i > 1; i--) {
@@ -285,13 +289,11 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 					}
 
 					if (j == i) {	//found a combination
+            assert(tok);
+            assert(toktmp);
 						tok->rec.code = tok_enum;
-						strcpy(tok->rec.data, d2_tok_form[tok_enum].form);	//TODO: this should not lead to memmory corruption?
-						toktmp = tok;
-						for (j = 0; j < i; j++)
-							toktmp = toktmp->next;
-						tok->next = toktmp;	//TODO: ->next?? aparently not!
-						toktmp->prev = tok;	//bypass extra tokens
+						__d2_realloc_tok_buf(tok, d2_tok_form[tok_enum].form, strlen(d2_tok_form[tok_enum].form), 0);
+            __d2_skip_tok(ctx, toktmp);
 					}
 
 				}
@@ -304,8 +306,8 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 		if (tok->rec.code == TOK_ELSE && tok->next
 		    && tok->next->rec.code == TOK_IF) {
 			tok->rec.code = TOK_ELSE_IF;
-			tok->next = tok->next->next;
-			strcpy(tok->rec.data, d2_tok_form[TOK_ELSE_IF].form);
+			__d2_realloc_tok_buf(tok, d2_tok_form[TOK_ELSE_IF].form, strlen(d2_tok_form[TOK_ELSE_IF].form), 0);
+      __d2_skip_tok(ctx, tok->next);
 		}
 	}
 
@@ -316,54 +318,31 @@ e13_t d2_combine(struct d2_tok *toklist_first)
 	    toklist_first->next->rec.code == TOK_LABEL &&
 	    !toklist_first->next->next) {
 		toklist_first->rec.code = TOK_LABEL;
-		strcat(toklist_first->rec.data, toklist_first->next->rec.data);
-		toklist_first->next = NULL;
+
+    __d2_skip_tok(ctx, toklist_first->next);
 	}
 
 	//2. resolve scientific numbers
 	for (tok = toklist_first; tok; tok = tok->next) {
-		l = strlen(tok->rec.data) - 1;
-		c = tok->rec.data[l];
-		if (c == 'e' || c == 'E') {
-			tok->rec.data[l] = 0;
-			if (strtold(tok->rec.data, NULL)) {	//TODO: check for RANGE errors
-				tok->rec.data[l] = c;
-				toktmp = tok->next;
-				if (toktmp) {
-					if (toktmp->rec.code == TOK_NUMBER) {
-						tok->rec.code = TOK_NUMBER;
-						strcat(tok->rec.data,
-						       toktmp->rec.data);
-						tok->next = toktmp->next;
-						if (toktmp->next) {
-							toktmp->next->prev =
-							    tok;
-						}
-						tok->dval = strtold(tok->rec.data, NULL);	//TODO: check for range errors
-					} else if (toktmp->rec.code == TOK_ADD
-						   || toktmp->rec.code ==
-						   TOK_SUB) {
-						if ((toktmp = toktmp->next)) {
-							if (toktmp->rec.code ==
-							    TOK_NUMBER) {
-								tok->rec.code =
-								    TOK_NUMBER;
-								sprintf(tok->rec.data, "%s%s%s", tok->rec.data, tok->next->rec.data, toktmp->rec.data);	//TODO: ugly!
-								tok->next =
-								    toktmp->next;
-								if (toktmp->next) {
-									toktmp->next->prev
-									    =
-									    tok;
-								}
-							}
-						}
-					}
-				}
-			} else {	//if strtold()
-				tok->rec.data[l] = c;
-			}	//else (if strtold())
-		}
+    if(tok->rec.code == TOK_STRING){
+      //these 3 lines already done in tokenize
+      //errno = 0;
+      //tok->dval = strtold(tok->rec.data, NULL);//try format xxxEyyy
+      //if(!errno) tok->rec.code = TOK_NUMBER;
+      if(tok->next && tok->next->next && //try format xxxE+-yyy
+              (tok->next->rec.code == TOK_ADD || tok->next->rec.code == TOK_SUB) &&
+              tok->next->next->rec.code == TOK_NUMBER){
+        snprintf(sci_num, D2_MAX_SCI_NUM, "%s%s%s", tok->rec.data, tok->next->rec.data, tok->next->next->rec.data);
+        errno = 0;
+        tok->dval = strtold(sci_num, NULL);
+        if(!errno){
+          tok->rec.code = TOK_NUMBER;
+          __d2_skip_tok(ctx, tok->next->next);
+          __d2_skip_tok(ctx, tok->next);
+        }
+      }//else if
+    }
+
 	}
 	return E13_OK;
 }
@@ -376,17 +355,17 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 	struct d2_tok_form_s *form;
 
 	ctx->ntoks =
-	    __d2_estimate_ntokens(buf, d2_delimlist, d2_escape, d2_pack1,
+	    __d2_estimate_ntokens(ctx->buf, d2_delimlist, d2_escape, d2_pack1,
 				  d2_pack2);
 
 	dm_tok2("esttok = %lu\n", ctx->ntok);
 
-	ctx->tok_databufsize = __d2_get_tok_databuf_poolsize(buf, ctx->ntok);
+	ctx->tok_databuf_poolsize = __d2_get_tok_databuf_poolsize(buf, ctx->ntok);
 
 	if (__d2_alloc_tok_list(ctx - ctx->ntok) != E13_OK)
 		return e13_error(E13_NOMEM);
 
-	if (__d2_alloc_tok_databuf_pool(ctx, ctx->tok_databufsize) != E13_OK)
+	if (__d2_alloc_tok_databuf_pool(ctx, ctx->tok_databuf_poolsize) != E13_OK)
 		return e13_error(E13_NOMEM);
 
 	//some init before the loop     

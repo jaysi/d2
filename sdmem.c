@@ -1,5 +1,7 @@
 //static - dynamic memmory manager for allocating many small objects in a single buffer
 #include "error13.h"
+#include "d2.h"
+#include "token.h"
 
 struct sdmem_node {
 	size_t size;
@@ -50,6 +52,7 @@ e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf)
 		tok = ctx->tok_list_first;
 
 	}
+  return E13_OK;
 }
 
 e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
@@ -73,7 +76,7 @@ e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
 			ctx->tok_list_last = tok;
 		} else {
 			tok->prev = ctx->tok_list_last;
-			tok_list_last->next = tok;
+			ctx->tok_list_last->next = tok;
 			ctx->tok_list_last = tok;
 		}
 
@@ -86,8 +89,8 @@ e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
 
 e13_t __d2_alloc_tok_databuf_pool(struct d2_ctx *ctx, size_t bufsize)
 {
-	ctx->tok_databuf = (char *)malloc(bufsize);
-	if (!ctx->tok_databuf)
+	ctx->tok_databuf_pool = (char *)malloc(bufsize);
+	if (!ctx->tok_databuf_pool)
 		return e13_error(E13_NOMEM);
 	return E13_OK;
 }
@@ -108,7 +111,36 @@ struct d2_tok *__d2_enumset_tok_buf(struct d2_ctx *ctx, char *data,
 		return NULL;
 
 	memcpy(ctx->tok_list_cur->rec.data, data, datasize);
-	(ctx->tok_list_cur->rec.data + datasize) = 0;	//terminate buffer
+	*(ctx->tok_list_cur->rec.data + datasize) = 0;	//terminate buffer
 
 	return ctx->tok_list_cur;
+}
+
+e13_t __d2_realloc_tok_buf(struct d2_tok* tok, char* data, size_t datasize, int free_old_data){
+  if(free_old_data){
+    free(tok->rec.data);
+    tok->rec.data = (char*)malloc(datasize + 1);
+  } else {
+    tok->rec.data = (char*)realloc(tok->rec.data, datasize + 1);
+  }
+  if(tok->rec.data) strcpy(tok->rec.data, data);
+  else return e13_error(E13_NOMEM);
+
+  return E13_OK;
+
+}
+
+e13_t __d2_skip_tok(struct d2_ctx* ctx, struct d2_tok* tok){
+  if(tok == ctx->tok_list_first){
+    ctx->tok_list_first = ctx->tok_list_first->next;
+    if(ctx->tok_list_first) ctx->tok_list_first->prev = NULL;
+  } else if(tok == ctx->tok_list_last){
+    ctx->tok_list_last = ctx->tok_list_last->prev;
+    if(ctx->tok_list_last) ctx->tok_list_last->next = NULL;
+  } else {
+    tok->prev = tok->next;
+  }
+  free(tok->rec.data);
+  free(tok);
+  return E13_OK;
 }

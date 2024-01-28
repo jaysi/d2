@@ -8,8 +8,7 @@
 extern "C" {
 #endif
 
-	e13_t d2_tokenize(char *buf, size_t bufsize,
-			  struct d2_tok **toklist_first, size_t *ntok);
+	e13_t d2_tokenize(struct d2_ctx* ctx);
 	e13_t d2_combine(struct d2_tok *toklist_first);
 	e13_t d2_lex(struct d2_tok *tok);
 	struct d2_tok *d2_blockize(struct d2_tok *first);
@@ -18,6 +17,7 @@ extern "C" {
 	e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
 	e13_t d2_infix2prefix(struct d2_exp *exp);
 
+  e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf);
 #ifdef __cplusplus
 }
 #endif
@@ -99,8 +99,7 @@ e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 			free(ctx->buf);
 		if (ctx->exps)
 			free(ctx->exps);
-		if (ctx->toks)
-			free(ctx->toks);
+    __d2_delete_tok_list(ctx, 1);
 		while (ctx->var_list_first) {
 			var = ctx->var_list_first;
 			ctx->var_list_first = ctx->var_list_first->next;
@@ -164,7 +163,7 @@ e13_t d2_new_ctx(struct d2_handle *h, char *name)
 	ctx->var_list_first = NULL;
 	ctx->buf = NULL;
 	ctx->exps = NULL;
-	ctx->toks = NULL;
+	ctx->tok_list_first = NULL;
 	ctx->next = NULL;
 	ctx->h = h;
 	strcpy(ctx->name, name);
@@ -232,11 +231,10 @@ e13_t d2_rst_ctx(struct d2_handle *h, char *name)
 		free(ctx->buf);
 	if (ctx->exps)
 		free(ctx->exps);
-	if (ctx->toks)
-		free(ctx->toks);
+  __d2_delete_tok_list(ctx, 1);
 	//this must be enough to start a new
 	ctx->exps = NULL;
-	ctx->toks = NULL;
+	ctx->tok_list_first = NULL;
 	ctx->buf = NULL;
 	while (ctx->ret_list_first) {
 		ret = ctx->ret_list_first;
@@ -274,7 +272,7 @@ e13_t d2_add_ctx_ret(struct d2_handle *h, char *name, struct d2_tok *tok)
 		}
 		ret_list_last->next = ret;
 	}
-
+  return E13_OK;
 }
 
 e13_t d2_run_ctx(struct d2_handle *h, char *name)
@@ -282,7 +280,6 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 	struct d2_ctx *ctx;
 	size_t nexp, ntok;
-	struct d2_tok *toks;
 	struct d2_exp *exps;
 	e13_t err;
 
@@ -292,19 +289,15 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 	if (!ctx->exps) {	//not compiled
 
 		if ((err =
-		     d2_tokenize(ctx->buf, ctx->bufsize, &toks,
-				 &ntok)) == E13_OK) {
-
-			ctx->toks = toks;
-			ctx->ntoks = ntok;
+		     d2_tokenize(ctx)) == E13_OK) {//assume ctx->buf is already set
 
 			//TODO: for now these two always return OK
-			d2_combine(toks);
+			d2_combine(ctx->tok_list_first);
 
-			d2_blockize(toks);
+			d2_blockize(ctx->tok_list_first);
 
 			if ((err =
-			     d2_expize(NULL, toks, &exps, &nexp)) == E13_OK) {
+			     d2_expize(NULL, ctx->tok_list_first, &exps, &nexp)) == E13_OK) {
 				ctx->nexps = nexp;
 				ctx->exps = exps;
 			} else

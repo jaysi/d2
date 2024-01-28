@@ -57,8 +57,8 @@ struct d2_ctx {
 
 	char *name;
 
-	size_t tok_databufsize;	//size of the buffer below
-	char *tok_databuf;	//shared buffer of token data
+	size_t tok_databuf_poolsize;	//size of the buffer below
+	char *tok_databuf_pool;	//shared buffer of token data
 	size_t ntoks;
 	struct d2_tok *tok_list_first, *tok_list_last, *tok_list_cur;
 
