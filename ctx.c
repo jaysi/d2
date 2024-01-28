@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 	e13_t d2_tokenize(struct d2_ctx* ctx);
-	e13_t d2_combine(struct d2_tok *toklist_first);
+	e13_t d2_combine(struct d2_ctx *ctx);
 	e13_t d2_lex(struct d2_tok *tok);
 	struct d2_tok *d2_blockize(struct d2_tok *first);
 	e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
@@ -292,7 +292,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 		     d2_tokenize(ctx)) == E13_OK) {//assume ctx->buf is already set
 
 			//TODO: for now these two always return OK
-			d2_combine(ctx->tok_list_first);
+			d2_combine(ctx);
 
 			d2_blockize(ctx->tok_list_first);
 

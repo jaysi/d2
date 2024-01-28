@@ -264,9 +264,9 @@ e13_t d2_lex(struct d2_tok *tok)
 	return E13_OK;
 }
 
-e13_t d2_combine(struct d2_tok *toklist_first)
-{
-	struct d2_tok *tok, *toktmp;
+e13_t d2_combine(struct d2_ctx* ctx)
+{  
+	struct d2_tok *tok, *toktmp, *toklist_first = ctx->tok_list_first;
 	int j;
   char sci_num[D2_MAX_SCI_NUM];
 
@@ -360,9 +360,9 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 
 	dm_tok2("esttok = %lu\n", ctx->ntok);
 
-	ctx->tok_databuf_poolsize = __d2_get_tok_databuf_poolsize(buf, ctx->ntok);
+	ctx->tok_databuf_poolsize = __d2_get_tok_databuf_poolsize(ctx->buf, ctx->ntoks);
 
-	if (__d2_alloc_tok_list(ctx - ctx->ntok) != E13_OK)
+	if (__d2_alloc_tok_list(ctx, ctx->ntoks) != E13_OK)
 		return e13_error(E13_NOMEM);
 
 	if (__d2_alloc_tok_databuf_pool(ctx, ctx->tok_databuf_poolsize) != E13_OK)
