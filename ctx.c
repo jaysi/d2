@@ -4,6 +4,8 @@
 #include "d2.h"
 #include "lock.h"
 
+#define __dm_run_ctx(handle, fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -319,20 +321,16 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 	//now compiled, run!
 	for (ntok = 0; ntok < nexp; ntok++) {
-		if ((err = d2_run_pre(ctx, exps + ntok)) != E13_OK) {
-			d2_unget_ctx(h, ctx);
+    if ((err = d2_run_pre(ctx, exps + ntok) != E13_OK)) {
+		  d2_unget_ctx(h, ctx);
 			return err;
 		}
 	}
 
-	//TODO: ugliest thing!
-	ctx->ret_list_first->tok.rec.code = TOK_NUMBER;
-	ctx->ret_list_first->tok.dval = ctx->exps[nexp - 1].stack_top->dval;
-	ctx->ret_list_first->tok.rec.data =
-	    ctx->exps[nexp - 1].stack_top->rec.data;
-
 	d2_unget_ctx(h, ctx);
 
-	return E13_OK;
+  __dm_run_ctx(ctx, "%s", "run ctx");
+
+	return nexp?E13_OK:e13_error(E13_EMPTY);
 
 }

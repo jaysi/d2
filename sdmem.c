@@ -144,3 +144,23 @@ e13_t __d2_skip_tok(struct d2_ctx* ctx, struct d2_tok* tok){
   free(tok);
   return E13_OK;
 }
+e13_t __d2_add_ret(struct d2_ctx* ctx, struct d2_exp* exp){
+  struct d2_ret* ret = (struct d2_ret*)malloc(sizeof(struct d2_ret));
+  if(!ret) return e13_error(E13_NOMEM);
+  ret->next = NULL;
+  if(!ctx->ret_list_first){
+    ctx->ret_list_first = ret;
+    ctx->ret_list_last = ret;
+  } else {
+    ctx->ret_list_last->next = ret;
+    ctx->ret_list_last = ret;
+  }
+
+  free(ret->tok.rec.data);
+  ret->tok.rec.data = (char*)malloc(strlen(exp->stack_top->rec.data)+1);
+  strcpy(ret->tok.rec.data, exp->stack_top->rec.data);
+  ret->tok.rec.code = exp->stack_top->rec.code;
+  ret->tok.dval = exp->stack_top->dval;
+
+  return E13_OK;
+}

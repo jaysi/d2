@@ -63,7 +63,7 @@ struct d2_ctx {
 	struct d2_tok *tok_list_first, *tok_list_last, *tok_list_cur;
 
 	//return results    
-	struct d2_ret *ret_list_first;
+	struct d2_ret *ret_list_first, *ret_list_last;
 
 	size_t nexps;
 	struct d2_exp *exps;	//dynamic array

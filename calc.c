@@ -6,6 +6,7 @@
 #define __dm_calc(handle, fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define __dm_enum(handle, fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 
+extern e13_t __d2_add_ret(struct d2_ctx* ctx, struct d2_exp* exp);
 extern e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok);
 extern e13_t __d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1,
 			   struct d2_tok **tok2);
@@ -498,5 +499,8 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 		enumtok = enumtok->prefix_next;
 	}
 
+  __d2_add_ret(ctx, exp);
+
 	return E13_OK;
 }
+

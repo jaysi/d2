@@ -18,7 +18,6 @@ MKDIR = mkdir
 all: debug
 
 d2: $(OBJ)
-	$(MKDIR) obj release debug
 	$(CC) -o $@ $^ $(CFLAGS) $(LINKLIBS)
 	$(MV) *.o obj/
 
