@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-	e13_t d2_tokenize(struct d2_ctx* ctx);
+	e13_t d2_tokenize(struct d2_ctx *ctx);
 	e13_t d2_combine(struct d2_ctx *ctx);
 	e13_t d2_lex(struct d2_tok *tok);
 	struct d2_tok *d2_blockize(struct d2_tok *first);
@@ -19,7 +19,7 @@ extern "C" {
 	e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
 	e13_t d2_infix2prefix(struct d2_exp *exp);
 
-  e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf);
+	e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf);
 #ifdef __cplusplus
 }
 #endif
@@ -101,7 +101,7 @@ e13_t d2_rm_ctx(struct d2_handle *h, char *name)
 			free(ctx->buf);
 		if (ctx->exps)
 			free(ctx->exps);
-    __d2_delete_tok_list(ctx, 1);
+		__d2_delete_tok_list(ctx, 1);
 		while (ctx->var_list_first) {
 			var = ctx->var_list_first;
 			ctx->var_list_first = ctx->var_list_first->next;
@@ -233,7 +233,7 @@ e13_t d2_rst_ctx(struct d2_handle *h, char *name)
 		free(ctx->buf);
 	if (ctx->exps)
 		free(ctx->exps);
-  __d2_delete_tok_list(ctx, 1);
+	__d2_delete_tok_list(ctx, 1);
 	//this must be enough to start a new
 	ctx->exps = NULL;
 	ctx->tok_list_first = NULL;
@@ -274,7 +274,7 @@ e13_t d2_add_ctx_ret(struct d2_handle *h, char *name, struct d2_tok *tok)
 		}
 		ret_list_last->next = ret;
 	}
-  return E13_OK;
+	return E13_OK;
 }
 
 e13_t d2_run_ctx(struct d2_handle *h, char *name)
@@ -290,8 +290,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 	if (!ctx->exps) {	//not compiled
 
-		if ((err =
-		     d2_tokenize(ctx)) == E13_OK) {//assume ctx->buf is already set
+		if ((err = d2_tokenize(ctx)) == E13_OK) {	//assume ctx->buf is already set
 
 			//TODO: for now these two always return OK
 			d2_combine(ctx);
@@ -299,12 +298,14 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 			d2_blockize(ctx->tok_list_first);
 
 			if ((err =
-			     d2_expize(NULL, ctx->tok_list_first, &exps, &nexp)) == E13_OK) {
+			     d2_expize(NULL, ctx->tok_list_first, &exps,
+				       &nexp)) == E13_OK) {
 				ctx->nexps = nexp;
 				ctx->exps = exps;
-			} else
+			} else {
 				d2_unget_ctx(h, ctx);
-			return err;
+				return err;
+			}
 		} else {	//did not tokenize well!
 			d2_unget_ctx(h, ctx);
 			return err;
@@ -321,16 +322,16 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 	//now compiled, run!
 	for (ntok = 0; ntok < nexp; ntok++) {
-    if ((err = d2_run_pre(ctx, exps + ntok) != E13_OK)) {
-		  d2_unget_ctx(h, ctx);
+		if ((err = d2_run_pre(ctx, exps + ntok) != E13_OK)) {
+			d2_unget_ctx(h, ctx);
 			return err;
 		}
 	}
 
 	d2_unget_ctx(h, ctx);
 
-  __dm_run_ctx(ctx, "%s", "run ctx");
+	__dm_run_ctx(ctx, "%s, exp: %i\n", "run ctx", nexp);
 
-	return nexp?E13_OK:e13_error(E13_EMPTY);
+	return nexp ? E13_OK : e13_error(E13_EMPTY);
 
 }

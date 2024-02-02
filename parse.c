@@ -1,7 +1,8 @@
 #include "d2.h"
 #include "error13.h"
 
-#define dm_exp1(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_exp1(fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_print_tok(fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
 
 struct d2_tok *d2_blockize(struct d2_tok *first)
 {
@@ -48,7 +49,7 @@ size_t __d2_nexp(struct d2_tok *toklist_first)
 		tok = tok->next;
 	}
 
-	return nexp;
+	return ++nexp;		//will reserve one for termination
 }
 
 e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
@@ -68,11 +69,16 @@ e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
 	(*exps)[*nexp].infix_tok_first = tok;
 	(*exps)[*nexp].ntok = 1UL;
 	while (tok) {
+		dm_print_tok("tok->code: %i, data: %s, next: %s\n",
+			     tok->rec.code, tok->rec.data,
+			     tok->next ? tok->next->rec.data : "NULL");
 		switch (tok->rec.code) {
 		case TOK_SEMICOLON:
 		case TOK_LABEL:
 			(*exps)[*nexp].infix_tok_last = tok;
 			if (tok->next) {
+				dm_print_tok("*nexp: %li, est: %li\n", *nexp,
+					     nexp_est);
 				assert(*nexp < nexp_est - 1);
 				(*nexp)++;
 				(*exps)[*nexp].infix_tok_first = tok->next;

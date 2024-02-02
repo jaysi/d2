@@ -52,7 +52,7 @@ e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf)
 		tok = ctx->tok_list_first;
 
 	}
-  return E13_OK;
+	return E13_OK;
 }
 
 e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
@@ -116,51 +116,63 @@ struct d2_tok *__d2_enumset_tok_buf(struct d2_ctx *ctx, char *data,
 	return ctx->tok_list_cur;
 }
 
-e13_t __d2_realloc_tok_buf(struct d2_tok* tok, char* data, size_t datasize, int free_old_data){
-  if(free_old_data){
-    free(tok->rec.data);
-    tok->rec.data = (char*)malloc(datasize + 1);
-  } else {
-    tok->rec.data = (char*)realloc(tok->rec.data, datasize + 1);
-  }
-  if(tok->rec.data) strcpy(tok->rec.data, data);
-  else return e13_error(E13_NOMEM);
+e13_t __d2_realloc_tok_buf(struct d2_tok *tok, char *data, size_t datasize,
+			   int free_old_data)
+{
+	if (free_old_data) {
+		free(tok->rec.data);
+		tok->rec.data = (char *)malloc(datasize + 1);
+	} else {
+		tok->rec.data = (char *)realloc(tok->rec.data, datasize + 1);
+	}
+	if (tok->rec.data)
+		strcpy(tok->rec.data, data);
+	else
+		return e13_error(E13_NOMEM);
 
-  return E13_OK;
+	return E13_OK;
 
 }
 
-e13_t __d2_skip_tok(struct d2_ctx* ctx, struct d2_tok* tok){
-  if(tok == ctx->tok_list_first){
-    ctx->tok_list_first = ctx->tok_list_first->next;
-    if(ctx->tok_list_first) ctx->tok_list_first->prev = NULL;
-  } else if(tok == ctx->tok_list_last){
-    ctx->tok_list_last = ctx->tok_list_last->prev;
-    if(ctx->tok_list_last) ctx->tok_list_last->next = NULL;
-  } else {
-    tok->prev = tok->next;
-  }
-  free(tok->rec.data);
-  free(tok);
-  return E13_OK;
+e13_t __d2_skip_tok(struct d2_ctx *ctx, struct d2_tok *tok)
+{
+	if (tok == ctx->tok_list_first) {
+		ctx->tok_list_first = ctx->tok_list_first->next;
+		if (ctx->tok_list_first)
+			ctx->tok_list_first->prev = NULL;
+	} else if (tok == ctx->tok_list_last) {
+		ctx->tok_list_last = ctx->tok_list_last->prev;
+		if (ctx->tok_list_last)
+			ctx->tok_list_last->next = NULL;
+	} else {
+		tok->prev = tok->next;
+	}
+	free(tok->rec.data);
+	free(tok);
+	return E13_OK;
 }
-e13_t __d2_add_ret(struct d2_ctx* ctx, struct d2_exp* exp){
-  struct d2_ret* ret = (struct d2_ret*)malloc(sizeof(struct d2_ret));
-  if(!ret) return e13_error(E13_NOMEM);
-  ret->next = NULL;
-  if(!ctx->ret_list_first){
-    ctx->ret_list_first = ret;
-    ctx->ret_list_last = ret;
-  } else {
-    ctx->ret_list_last->next = ret;
-    ctx->ret_list_last = ret;
-  }
 
-  free(ret->tok.rec.data);
-  ret->tok.rec.data = (char*)malloc(strlen(exp->stack_top->rec.data)+1);
-  strcpy(ret->tok.rec.data, exp->stack_top->rec.data);
-  ret->tok.rec.code = exp->stack_top->rec.code;
-  ret->tok.dval = exp->stack_top->dval;
+e13_t __d2_add_ret(struct d2_ctx *ctx, struct d2_exp *exp)
+{
+	struct d2_ret *ret = (struct d2_ret *)malloc(sizeof(struct d2_ret));
+	if (!ret)
+		return e13_error(E13_NOMEM);
+	ret->next = NULL;
+	if (!ctx->ret_list_first) {
+		ctx->ret_list_first = ret;
+		ctx->ret_list_last = ret;
+	} else {
+		ctx->ret_list_last->next = ret;
+		ctx->ret_list_last = ret;
+	}
 
-  return E13_OK;
+	//free(ret->tok.rec.data);//TODO:?
+	assert(exp->stack_top->rec.data);
+	ret->tok.rec.data =
+	    (char *)malloc(strlen(exp->stack_top->rec.data) + 1);
+	strcpy(ret->tok.rec.data, exp->stack_top->rec.data);
+	ret->tok.rec.code = exp->stack_top->rec.code;
+	ret->tok.dval = exp->stack_top->dval;
+
+	return E13_OK;
 }

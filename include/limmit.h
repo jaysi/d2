@@ -3,5 +3,4 @@
 
 #define D2_MAX_SCI_NUM  30
 
-
 #endif

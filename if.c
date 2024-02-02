@@ -91,8 +91,8 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 	struct d2_ctx *ctx = h->ctxlist_first;
 	while (ctx) {
 		if (!strcmp(ctx->name, arg1)) {
-      assert(ctx);
-      assert(ctx->ret_list_first);
+			assert(ctx);
+			assert(ctx->ret_list_first);
 			switch (ctx->ret_list_first->tok.rec.code) {
 			case TOK_NUMBER:
 				d2_print(h, "return: %Lf\n",
@@ -398,15 +398,15 @@ int test_tokenize()
 						printf
 						    ("result of #%lu is %Lf\n",
 						     ntok,
-						     exps[ntok].
-						     stack_top->dval);
+						     exps[ntok].stack_top->
+						     dval);
 					}
 
 				} else {
 					printf
 					    ("infix2prefix fails here < %s >\n",
-					     exps[ntok].infix_tok_first->
-					     rec.data);
+					     exps[ntok].infix_tok_first->rec.
+					     data);
 				}
 			}
 
