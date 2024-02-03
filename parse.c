@@ -52,22 +52,21 @@ size_t __d2_nexp(struct d2_tok *toklist_first)
 	return ++nexp;		//will reserve one for termination
 }
 
-e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
-		struct d2_exp **exps, size_t *nexp)
+e13_t d2_expize(struct d2_ctx *ctx, struct d2_exp *parent)
 {
 	struct d2_tok *tok;
-	size_t nexp_est = __d2_nexp(toklist_first);
+	size_t nexp_est = __d2_nexp(ctx->tok_list_first);
 	if (!nexp_est)
 		return e13_error(E13_EMPTY);
 
-	*exps = (struct d2_exp *)malloc(nexp_est * sizeof(struct d2_exp));
-	if (!(*exps))
+	ctx->exps = (struct d2_exp *)malloc(nexp_est * sizeof(struct d2_exp));
+	if (!(ctx->exps))
 		return e13_error(E13_NOMEM);
 
-	tok = toklist_first;
-	*nexp = 0UL;
-	(*exps)[*nexp].infix_tok_first = tok;
-	(*exps)[*nexp].ntok = 1UL;
+	tok = ctx->tok_list_first;
+	ctx->nexps = 0UL;
+	ctx->exps[ctx->nexps].infix_tok_first = tok;
+	ctx->exps[ctx->nexps].ntok = 1UL;
 	while (tok) {
 		dm_print_tok("tok->code: %i, data: %s, next: %s\n",
 			     tok->rec.code, tok->rec.data,
@@ -75,14 +74,15 @@ e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
 		switch (tok->rec.code) {
 		case TOK_SEMICOLON:
 		case TOK_LABEL:
-			(*exps)[*nexp].infix_tok_last = tok;
+			dm_print_tok("got ; or : -> *nexp: %li, est: %li\n",
+				     ctx->nexps, nexp_est);
+			ctx->exps[ctx->nexps].infix_tok_last = tok;
+			ctx->nexps++;
 			if (tok->next) {
-				dm_print_tok("*nexp: %li, est: %li\n", *nexp,
-					     nexp_est);
-				assert(*nexp < nexp_est - 1);
-				(*nexp)++;
-				(*exps)[*nexp].infix_tok_first = tok->next;
-				(*exps)[*nexp].ntok = 1UL;
+				assert(ctx->nexps < nexp_est - 1);
+				ctx->exps[ctx->nexps].infix_tok_first =
+				    tok->next;
+				ctx->exps[ctx->nexps].ntok = 1UL;
 			}
 			break;
 		default:
@@ -95,11 +95,11 @@ e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
 			   tok = tok->blockend;
 			   (*exps)[*nexp].infix_tok_first = tok->next;
 			   (*exps)[*nexp].ntok = 1UL;
-			   } else */ (*exps)[*nexp].ntok++;
+			   } else */ ctx->exps[ctx->nexps].ntok++;
 			break;
 		}
 		if (!tok->next)
-			(*exps)[*nexp].infix_tok_last = tok;
+			ctx->exps[ctx->nexps].infix_tok_last = tok;
 		tok = tok->next;
 	}			//while(tok)
 

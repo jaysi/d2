@@ -283,8 +283,8 @@ e13_t d2_combine(struct d2_ctx *ctx)
 					for (j = 0; j < i; j++) {
 						if (toktmp && toktmp->rec.data
 						    && toktmp->rec.data[0] ==
-						    d2_tok_form[tok_enum].
-						    form[j])
+						    d2_tok_form[tok_enum].form
+						    [j])
 							toktmp = toktmp->next;
 						else
 							break;
@@ -296,12 +296,11 @@ e13_t d2_combine(struct d2_ctx *ctx)
 						tok->rec.code = tok_enum;
 						__d2_realloc_tok_buf(tok,
 								     d2_tok_form
-								     [tok_enum].
-								     form,
+								     [tok_enum].form,
 								     strlen
 								     (d2_tok_form
-								      [tok_enum].
-								      form), 0);
+								      [tok_enum].form),
+								     0);
 						__d2_skip_tok(ctx, toktmp);
 					}
 
@@ -316,8 +315,8 @@ e13_t d2_combine(struct d2_ctx *ctx)
 		    && tok->next->rec.code == TOK_IF) {
 			tok->rec.code = TOK_ELSE_IF;
 			__d2_realloc_tok_buf(tok, d2_tok_form[TOK_ELSE_IF].form,
-					     strlen(d2_tok_form[TOK_ELSE_IF].
-						    form), 0);
+					     strlen(d2_tok_form
+						    [TOK_ELSE_IF].form), 0);
 			__d2_skip_tok(ctx, tok->next);
 		}
 	}

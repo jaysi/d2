@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	struct d2_handle h;
 
 #ifndef NDEBUG
-	printf("compile time:%s-%s\n", __DATE__, __TIME__);
+	printf("Debug compilation time:%s-%s\n", __DATE__, __TIME__);
 #endif
 
 	d2_load_conf(&h.conf, NULL);

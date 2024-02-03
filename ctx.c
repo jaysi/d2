@@ -14,8 +14,7 @@ extern "C" {
 	e13_t d2_combine(struct d2_ctx *ctx);
 	e13_t d2_lex(struct d2_tok *tok);
 	struct d2_tok *d2_blockize(struct d2_tok *first);
-	e13_t d2_expize(struct d2_exp *parent, struct d2_tok *toklist_first,
-			struct d2_exp **exps, size_t *nexp);
+	e13_t d2_expize(struct d2_ctx *ctx, struct d2_exp *parent);
 	e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
 	e13_t d2_infix2prefix(struct d2_exp *exp);
 
@@ -297,9 +296,9 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 			d2_blockize(ctx->tok_list_first);
 
-			if ((err =
-			     d2_expize(NULL, ctx->tok_list_first, &exps,
-				       &nexp)) == E13_OK) {
+			if ((err = d2_expize(ctx, NULL)) == E13_OK) {
+				__dm_run_ctx(ctx, "%s, exp: %li\n", "run ctx",
+					     nexp);
 				ctx->nexps = nexp;
 				ctx->exps = exps;
 			} else {
@@ -330,7 +329,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 	d2_unget_ctx(h, ctx);
 
-	__dm_run_ctx(ctx, "%s, exp: %i\n", "run ctx", nexp);
+	__dm_run_ctx(ctx, "%s, exp: %li\n", "run ctx", nexp);
 
 	return nexp ? E13_OK : e13_error(E13_EMPTY);
 

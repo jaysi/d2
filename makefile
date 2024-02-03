@@ -19,21 +19,21 @@ all: debug
 
 d2: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LINKLIBS)
-	$(MV) *.o obj/
+#	$(MV) *.o obj/
 
 release: d2
 	$(STRIP) d2
-	$(MV) d2 release/
+#	$(MV) d2 release/
 	$(info *** put executable in release/ ; 'make clean' before 'make debug' ***)
 
 debug: d2
-	$(MV) d2 debug/
+#	$(MV) d2 debug/
 	$(info *** put executable in debug/ ; 'make clean' before 'make release' ***)
 
 memchk: debug
 
 clean:
-	$(RM) *.o obj/* *.*~ *~ include/*~
+	$(RM) *.o obj/* *.*~ *~ include/*~ debug/* release/* d2
 
 cleanall: clean
 	$(RM) release/* debug/*
