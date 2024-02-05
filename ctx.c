@@ -280,8 +280,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 {
 
 	struct d2_ctx *ctx;
-	size_t nexp, ntok;
-	struct d2_exp *exps;
+	size_t ntok;	
 	e13_t err;
 
 	if ((err = d2_get_ctx(h, name, &ctx)) != E13_OK)
@@ -297,10 +296,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 			d2_blockize(ctx->tok_list_first);
 
 			if ((err = d2_expize(ctx, NULL)) == E13_OK) {
-				__dm_run_ctx(ctx, "%s, exp: %li\n", "run ctx",
-					     nexp);
-				ctx->nexps = nexp;
-				ctx->exps = exps;
+				__dm_run_ctx(ctx, "%s %s\n", "run ctx: ", ctx->name);
 			} else {
 				d2_unget_ctx(h, ctx);
 				return err;
@@ -310,8 +306,8 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 			return err;
 		}
 
-		for (ntok = 0; ntok < nexp; ntok++) {
-			if ((err = d2_infix2prefix(exps + ntok)) != E13_OK) {
+		for (ntok = 0; ntok < ctx->nexps; ntok++) {
+			if ((err = d2_infix2prefix(ctx->exps + ntok)) != E13_OK) {
 				d2_unget_ctx(h, ctx);
 				return err;
 			}
@@ -320,8 +316,8 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 	}			//end of compile block
 
 	//now compiled, run!
-	for (ntok = 0; ntok < nexp; ntok++) {
-		if ((err = d2_run_pre(ctx, exps + ntok) != E13_OK)) {
+	for (ntok = 0; ntok < ctx->nexps; ntok++) {
+		if ((err = d2_run_pre(ctx, ctx->exps + ntok) != E13_OK)) {
 			d2_unget_ctx(h, ctx);
 			return err;
 		}
@@ -329,8 +325,8 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 	d2_unget_ctx(h, ctx);
 
-	__dm_run_ctx(ctx, "%s, exp: %li\n", "run ctx", nexp);
+	__dm_run_ctx(ctx, "%s, exp: %li\n", "run ctx", ctx->nexps);
 
-	return nexp ? E13_OK : e13_error(E13_EMPTY);
+	return ctx->nexps ? E13_OK : e13_error(E13_EMPTY);
 
 }
