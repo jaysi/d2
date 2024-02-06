@@ -1,10 +1,11 @@
 #include "error13.h"
 #include "d2.h"
+#include "dmsg.h"
 
 //TODO: temporary, replace
 #define d2_perr(handle, fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
-#define __dm_calc(handle, fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
-#define __dm_enum(handle, fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
+#define __dm_calc	_dm
+#define __dm_enum	_dm
 
 extern e13_t __d2_add_ret(struct d2_ctx *ctx, struct d2_exp *exp);
 extern e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok);
@@ -46,7 +47,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 
 	while (enumtok) {
 
-		__dm_enum(NULL, "enum: %s\n", enumtok->rec.data);
+		__dm_enum("enum: %s\n", enumtok->rec.data);
 
 		switch (enumtok->rec.code) {
 
@@ -465,9 +466,9 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 			break;
 
 		case TOK_ASSIGN:
-			__dm_calc(h, "%s\n", "assignment got!");
+			__dm_calc("%s\n", "assignment got!");
 			if (__d2_pop_2tok(exp, &poptok1, &poptok2) != E13_OK) {
-				__dm_calc(h, "%s\n", "not enough tokens!");
+				__dm_calc("%s\n", "not enough tokens!");
 				d2_perr(NULL, "%s\n", "syntax error");
 				return e13_error(E13_SYNTAX);
 			} else {

@@ -3,8 +3,9 @@
 #include "error13.h"
 #include "d2.h"
 #include "lock.h"
+#include "dmsg.h"
 
-#define __dm_run_ctx(handle, fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
+#define __dm_run_ctx _dm
 
 #ifdef __cplusplus
 extern "C" {
@@ -296,7 +297,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 			d2_blockize(ctx->tok_list_first);
 
 			if ((err = d2_expize(ctx, NULL)) == E13_OK) {
-				__dm_run_ctx(ctx, "%s %s\n", "run ctx: ", ctx->name);
+				__dm_run_ctx("%s %s\n", "run ctx: ", ctx->name);
 			} else {
 				d2_unget_ctx(h, ctx);
 				return err;
@@ -325,7 +326,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 
 	d2_unget_ctx(h, ctx);
 
-	__dm_run_ctx(ctx, "%s, exp: %li\n", "run ctx", ctx->nexps);
+	__dm_run_ctx("%s, exp: %li\n", "run ctx", ctx->nexps);
 
 	return ctx->nexps ? E13_OK : e13_error(E13_EMPTY);
 

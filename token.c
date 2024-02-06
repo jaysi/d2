@@ -5,9 +5,10 @@
 #include "token.h"
 #include "d2.h"
 #include "limmit.h"
+#include "dmsg.h"
 
 #define dm_loc() fprintf(stderr, "loc: %s.%s().%i", __FILE__, __FUNC__, __LINE__)
-#define dm(fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
+#define dm _dm
 #define dm_tok1(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok2(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok3(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
