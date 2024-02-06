@@ -278,16 +278,13 @@ e13_t d2_combine(struct d2_ctx *ctx)
 		for (tok = toklist_first; tok; tok = tok->next) {
 			for (d2_tok_enum tok_enum = TOK_EMPTY;
 			     d2_tok_form[tok_enum].form; tok_enum++) {
-				if (strlen(d2_tok_form[tok_enum].form) == i) {
+				if (strlen(d2_tok_form[tok_enum].form) == i) {//filter combos with len = i
 					toktmp = tok;
 
-					for (j = 0; j < i; j++) {
-						if (toktmp && toktmp->rec.data
-						    && toktmp->rec.data[0] ==
-						    d2_tok_form[tok_enum].form
-						    [j])
-							toktmp = toktmp->next;
-						else
+					for (j = 0, toktmp = tok; j < i, toktmp; j++, toktmp = toktmp->next) {
+                        assert(toktmp->rec.data);
+                        _dm("toktmp: %s\n", toktmp->rec.data);
+						if (toktmp->rec.data[0] != d2_tok_form[tok_enum].form[j])
 							break;
 					}
 
@@ -302,7 +299,10 @@ e13_t d2_combine(struct d2_ctx *ctx)
 								     (d2_tok_form
 								      [tok_enum].form),
 								     0);
-						__d2_skip_tok(ctx, toktmp);
+
+						if(i == 3) __d2_skip_tok(ctx, toktmp->prev);
+                        __d2_skip_tok(ctx, toktmp);
+
 					}
 
 				}
