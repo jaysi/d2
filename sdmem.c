@@ -152,31 +152,41 @@ e13_t __d2_skip_tok(struct d2_ctx *ctx, struct d2_tok *tok)
 	return E13_OK;
 }
 
-e13_t __d2_dup_tok(struct d2_tok** dst, struct d2_tok* src){
-    *dst = (struct d2_tok*)malloc(sizeof(struct d2_tok));
-    if(!(*dst)) return e13_error(E13_NOMEM);
-    if(src->rec.data && strlen(src->rec.data)){
-        (*dst)->rec.data = (char*)malloc(strlen(src->rec.data)+1);    
-        if(!(*dst)->rec.data){ free(*dst); return e13_error(E13_NOMEM); }
-        strcpy((*dst)->rec.data, src->rec.data);        
-    } else (*dst)->rec.data = NULL;
-    (*dst)->rec.code = src->rec.code;
-    (*dst)->dval = src->dval;
-    
-    return E13_OK;
+e13_t __d2_dup_tok(struct d2_tok **dst, struct d2_tok *src)
+{
+	*dst = (struct d2_tok *)malloc(sizeof(struct d2_tok));
+	if (!(*dst))
+		return e13_error(E13_NOMEM);
+	if (src->rec.data && strlen(src->rec.data)) {
+		(*dst)->rec.data = (char *)malloc(strlen(src->rec.data) + 1);
+		if (!(*dst)->rec.data) {
+			free(*dst);
+			return e13_error(E13_NOMEM);
+		}
+		strcpy((*dst)->rec.data, src->rec.data);
+	} else
+		(*dst)->rec.data = NULL;
+	(*dst)->rec.code = src->rec.code;
+	(*dst)->dval = src->dval;
+
+	return E13_OK;
 }
 
-e13_t __d2_copy_tok(struct d2_tok* dst, struct d2_tok* src){
-    
-    if(src->rec.data && strlen(src->rec.data)){
-        dst->rec.data = (char*)malloc(strlen(src->rec.data)+1);    
-        if(!dst->rec.data){ return e13_error(E13_NOMEM); }
-        strcpy(dst->rec.data, src->rec.data);
-    } else dst->rec.data = NULL;
-    dst->rec.code = src->rec.code;
-    dst->dval = src->dval;
-    
-    return E13_OK;
+e13_t __d2_copy_tok(struct d2_tok *dst, struct d2_tok *src)
+{
+
+	if (src->rec.data && strlen(src->rec.data)) {
+		dst->rec.data = (char *)malloc(strlen(src->rec.data) + 1);
+		if (!dst->rec.data) {
+			return e13_error(E13_NOMEM);
+		}
+		strcpy(dst->rec.data, src->rec.data);
+	} else
+		dst->rec.data = NULL;
+	dst->rec.code = src->rec.code;
+	dst->dval = src->dval;
+
+	return E13_OK;
 }
 
 e13_t __d2_add_ret(struct d2_ctx *ctx, struct d2_exp *exp)
@@ -194,15 +204,15 @@ e13_t __d2_add_ret(struct d2_ctx *ctx, struct d2_exp *exp)
 	}
 
 	//free(ret->tok.rec.data);//TODO:?
-	assert(exp->stack_top->rec.data);    
+	assert(exp->stack_top->rec.data);
 
-    /*
-	ret->tok.rec.data =
-	    (char *)malloc(strlen(exp->stack_top->rec.data) + 1);
-	strcpy(ret->tok.rec.data, exp->stack_top->rec.data);
-	ret->tok.rec.code = exp->stack_top->rec.code;
-	ret->tok.dval = exp->stack_top->dval;
-    */
+	/*
+	   ret->tok.rec.data =
+	   (char *)malloc(strlen(exp->stack_top->rec.data) + 1);
+	   strcpy(ret->tok.rec.data, exp->stack_top->rec.data);
+	   ret->tok.rec.code = exp->stack_top->rec.code;
+	   ret->tok.dval = exp->stack_top->dval;
+	 */
 
 	return __d2_copy_tok(&(ret->tok), exp->stack_top);
 }

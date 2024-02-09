@@ -12,7 +12,7 @@
 #define dm_tok1(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok2(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok3(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
-
+#define _dm_comb _dm
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -270,44 +270,48 @@ e13_t d2_lex(struct d2_tok *tok)
 e13_t d2_combine(struct d2_ctx *ctx)
 {
 	struct d2_tok *tok, *toktmp, *toklist_first = ctx->tok_list_first;
-	int j;
+	int formcnt;
+  int combolen;
 	char sci_num[D2_MAX_SCI_NUM];
 
 	//1. resolve combo operators
-	for (int i = 3; i > 1; i--) {
-		for (tok = toklist_first; tok; tok = tok->next) {
+	for (combolen = 3; combolen > 1; combolen--) {
 			for (d2_tok_enum tok_enum = TOK_EMPTY;
 			     d2_tok_form[tok_enum].form; tok_enum++) {
-				if (strlen(d2_tok_form[tok_enum].form) == i) {//filter combos with len = i
-					toktmp = tok;
+				if (strlen(d2_tok_form[tok_enum].form) == combolen) {	//filter combos with len = i
+          for(tok = ctx->tok_list_first; tok; tok = tok->next){
+            toktmp = tok;
+					  for (formcnt = 0; formcnt < combolen; formcnt++) {
+              _dm_comb("prev data = %s\n", toktmp->prev->rec.data);
+						  if (toktmp->rec.data[0] == d2_tok_form[tok_enum].
+						    form[formcnt]){
+							    toktmp = toktmp->next;//check next;
+                } else break;//break if not same
+              if(!toktmp) break;
+					  }//for(j)
+            if(formcnt == combolen){//for loop ended normally
 
-					for (j = 0, toktmp = tok; j < i, toktmp; j++, toktmp = toktmp->next) {
-                        assert(toktmp->rec.data);
-                        _dm("toktmp: %s\n", toktmp->rec.data);
-						if (toktmp->rec.data[0] != d2_tok_form[tok_enum].form[j])
-							break;
-					}
-
-					if (j == i) {	//found a combination
-						assert(tok);
-						assert(toktmp);
 						tok->rec.code = tok_enum;
 						__d2_realloc_tok_buf(tok,
 								     d2_tok_form
-								     [tok_enum].form,
+								     [tok_enum].
+								     form,
 								     strlen
 								     (d2_tok_form
-								      [tok_enum].form),
-								     0);
+								      [tok_enum].
+								      form), 0);
 
-						if(i == 3) __d2_skip_tok(ctx, toktmp->prev);
-                        __d2_skip_tok(ctx, toktmp);
+						if (combolen == 3)
+							__d2_skip_tok(ctx,
+								      tok->
+								      next->next);
+						__d2_skip_tok(ctx, tok->next);
 
-					}
-
+            }//if same == combolen          
+           
+          }//for(tok)
 				}
 			}
-		}
 	}			//resolve combo operators ends
 
 	//resolve else if

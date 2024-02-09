@@ -500,7 +500,8 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 		enumtok = enumtok->prefix_next;
 	}
 
-    __dm_calc("ans is %Lf, data is %s\n", exp->stack_top->dval, exp->stack_top->rec.data);
+	__dm_calc("ans is %Lf, data is %s\n", exp->stack_top->dval,
+		  exp->stack_top->rec.data);
 
 	__d2_add_ret(ctx, exp);
 

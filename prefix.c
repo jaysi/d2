@@ -77,7 +77,7 @@ e13_t d2_infix2prefix(struct d2_exp *exp)
 	enumtok = exp->infix_tok_last;
 	exp->stack_top = NULL;
 	while (enumtok && enumtok != exp->infix_tok_first->prev) {	//move backwards
-        dm_pre1("enumtok->code: %i\n", enumtok->rec.code);
+		dm_pre1("enumtok->code: %i\n", enumtok->rec.code);
 		dm_pre1("enumtok->data: %s\n", enumtok->rec.data);
 		if (enumtok->rec.code < TOK_OO_LIMMIT) {	//OPERATOR, TOK_VAR IS THE LIMMIT BETWEEN OPERATOR/OPERAND
 			switch (enumtok->rec.code) {

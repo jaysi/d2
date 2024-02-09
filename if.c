@@ -93,7 +93,7 @@ void d2_print_ctx_list(struct d2_handle *h)
 void __d2_print_ctx(struct d2_handle *h, char *arg1)
 {
 	struct d2_var *var;
-    struct d2_ret* ret;
+	struct d2_ret *ret;
 	d2_lock_ctx(h);
 	struct d2_ctx *ctx = h->ctxlist_first;
 	while (ctx) {
@@ -101,31 +101,31 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 			assert(ctx);
 			assert(ctx->ret_list_first);
 
-            ret = ctx->ret_list_first;
-            while(ret){
-                switch (ctx->ret_list_first->tok.rec.code) {
-                case TOK_NUMBER:
-                    d2_print(h, "return number: %Lf\n",
-                        ret->tok.dval);
-                    break;
-                case TOK_STRING:
-                    d2_print(h, "return string: %s\n",
-                        ret->tok.rec.data);
-                    break;
-                case TOK_VAR:
-                    d2_print(h, "return var: %s = %Lf\n",
-                        ret->tok.rec.data,
-                        ret->tok.dval);
-                    break;
-                default:
-                    d2_print(h,
-                        "return unknown type: %s, %Lf\n",
-                        ret->tok.rec.data,
-                        ret->tok.dval);
-                    break;
-                }
-                ret = ret->next;
-            }//while(ret)
+			ret = ctx->ret_list_first;
+			while (ret) {
+				switch (ctx->ret_list_first->tok.rec.code) {
+				case TOK_NUMBER:
+					d2_print(h, "return number: %Lf\n",
+						 ret->tok.dval);
+					break;
+				case TOK_STRING:
+					d2_print(h, "return string: %s\n",
+						 ret->tok.rec.data);
+					break;
+				case TOK_VAR:
+					d2_print(h, "return var: %s = %Lf\n",
+						 ret->tok.rec.data,
+						 ret->tok.dval);
+					break;
+				default:
+					d2_print(h,
+						 "return unknown type: %s, %Lf\n",
+						 ret->tok.rec.data,
+						 ret->tok.dval);
+					break;
+				}
+				ret = ret->next;
+			}	//while(ret)
 
 			var = ctx->var_list_first;
 			d2_print(h, "%s\n", "var{");

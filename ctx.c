@@ -281,7 +281,7 @@ e13_t d2_run_ctx(struct d2_handle *h, char *name)
 {
 
 	struct d2_ctx *ctx;
-	size_t ntok;	
+	size_t ntok;
 	e13_t err;
 
 	if ((err = d2_get_ctx(h, name, &ctx)) != E13_OK)
