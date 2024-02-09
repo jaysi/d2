@@ -62,12 +62,12 @@ void __d2_appand_postfix(struct d2_exp *exp, struct d2_tok *tok)
 void __d2_print_prefix(struct d2_exp *exp)
 {
 	struct d2_tok *tok = exp->prefix_tok_first;
-	printf("~");
+	_dm_flat("%s", "*** prefix { ");
 	while (tok) {
-		printf("%s->", tok->rec.data);
+		_dm_flat("%s ", tok->rec.data);
 		tok = tok->prefix_next;
 	}
-	printf("\n");
+	_dm_flat("%s", " } prefix ***\n");
 }
 
 e13_t d2_infix2prefix(struct d2_exp *exp)
@@ -131,13 +131,15 @@ e13_t d2_infix2prefix(struct d2_exp *exp)
 		__d2_appand_postfix(exp, poptok);
 
 #ifdef PRINT_PREFIX
-	struct d2_tok *tok;
-	printf("\nprefix:");
-	for (tok = exp->prefix_tok_first; tok; tok = tok->prefix_next) {
-		printf("%s ", tok->rec.data);
+	struct d2_tok *tok = exp->prefix_tok_first;
+	_dm_flat("%s", "*** prefix { ");
+	while (tok) {
+		_dm_flat("%s ", tok->rec.data);
+		tok = tok->prefix_next;
 	}
-	printf("\n");
-
-#endif				/*  */
+	_dm_flat("%s", " } prefix ***\n");/*  */
+#endif
+    
 	return E13_OK;
+
 }

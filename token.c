@@ -7,10 +7,40 @@
 #include "limmit.h"
 #include "dmsg.h"
 
+/*
+
+#define COLOR_TABLE \
+X(red, "red")       \
+X(green, "green")   \
+X(blue, "blue")
+
+#define X(a, b) a,
+enum COLOR {
+  COLOR_TABLE
+};
+#undef X
+
+#define X(a, b) b,
+char *color_name[] = {
+  COLOR_TABLE
+};
+#undef X
+
+int main() {
+  enum COLOR c = red;
+  printf("c=%s\n", color_name[c]);
+  return 0;
+}
+
+*/
+
+//enable to debug tok sequence;
+#undef ENABLE_DUMP_TOK
+
 #define dm_loc() fprintf(stderr, "loc: %s.%s().%i", __FILE__, __FUNC__, __LINE__)
 #define dm _dm
 #define dm_tok1(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
-#define dm_tok2(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_tok2 _dm
 #define dm_tok3(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define _dm_comb _dm
 #ifdef __cplusplus
@@ -25,6 +55,7 @@ extern "C" {
 	e13_t __d2_alloc_tok_databuf_pool(struct d2_ctx *ctx, size_t bufsize);
 	e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok);
 	e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf);
+    e13_t __d2_free_unused_tok_list(struct d2_ctx* ctx, struct d2_tok* last_tok);//this is vital, terminate unused tokens
 	size_t __d2_get_tok_databuf_poolsize(char *buf, size_t ntok);
 #ifdef __cplusplus
 }
@@ -298,10 +329,14 @@ e13_t __d2_is_combo_tok(d2_tok_enum tok_id)
 
 e13_t __d2_cmp_tok_form(struct d2_tok *tok, d2_tok_enum tok_id)
 {
+
+    assert(tok);
+
 	struct d2_tok *tk = tok;
 	int tok_form_len = strlen(d2_tok_form[tok_id].form);
 
 	for (int i = 0; i < tok_form_len; i++) {
+        _dm_comb("tk->code = %i\n", tk->rec.code);
 		if (!tk ||
 		    d2_tok_form[tk->rec.code].form[0] !=
 		    d2_tok_form[tok_id].form[i])
@@ -312,6 +347,33 @@ e13_t __d2_cmp_tok_form(struct d2_tok *tok, d2_tok_enum tok_id)
 	_dm_comb("found one!, id = %i\n", tok_id);
 	return E13_OK;
 }
+
+#ifndef ENABLE_DUMP_TOK
+e13_t __d2_dump_tok_list(struct d2_tok* tok){
+    assert(tok);
+    struct d2_tok* tk = tok;
+    _dm_flat("%s", "*** token list dump { ");
+    while(tk){
+        _dm_flat("%s ", tk->rec.data);
+        tk = tk->next;
+    }
+    _dm_flat("%s", " } token list dump ***\n");
+    return E13_OK;
+}
+
+e13_t __d2_dump_tok_list_reverse(struct d2_tok* tok){
+    assert(tok);
+    struct d2_tok* tk = tok;
+    _dm_flat("%s", "*** reverse token list dump { ");
+    while(tk){
+        _dm_flat("%s ", tk->rec.data);
+        tk = tk->prev;
+    }
+    _dm_flat("%s", " } reverse token list dump ***\n");
+    return E13_OK;
+}
+
+#endif
 
 e13_t d2_combine(struct d2_ctx *ctx)
 {
@@ -328,18 +390,30 @@ TOK_ASSIGN_BIT_SHIFT_RIGHT };
 	//1. resolve combo operators
 	tok = ctx->tok_list_first;
 
+#ifndef NDEBUG
+    __d2_dump_tok_list(tok);  
+    __d2_dump_tok_list_reverse(ctx->tok_list_last);
+#endif
+
 	while (tok) {
+        _dm_comb("while(tok): tok->rec.code = %i, data = %s\n", tok->rec.code, tok->rec.data);
 		for (int i = 0;
 		     i < sizeof(math_combo_list) / sizeof(math_combo_list[0]);
 		     i++) {
 			if (__d2_cmp_tok_form(tok, math_combo_list[i]) == E13_OK) {	//for loop ended normally
 				tok->rec.code = math_combo_list[i];
-				__d2_realloc_tok_buf(tok, d2_tok_form[math_combo_list[i]].form, strlen(d2_tok_form[math_combo_list[i]].form), 1);	//free old data?
+				__d2_realloc_tok_buf(tok, d2_tok_form[math_combo_list[i]].form, strlen(d2_tok_form[math_combo_list[i]].form), 0);	//free old data?
 
-				if (math_combo_list[i] == TOK_ASSIGN_BIT_SHIFT_LEFT || math_combo_list[i] == TOK_ASSIGN_BIT_SHIFT_RIGHT)	//3 letter combos
+				if (math_combo_list[i] == TOK_ASSIGN_BIT_SHIFT_LEFT || math_combo_list[i] == TOK_ASSIGN_BIT_SHIFT_RIGHT){	//3 letter combos
+                    _dm_comb("3 letter comb, skip token %s\n", tok->next->next->rec.data);
 					__d2_skip_tok(ctx, tok->next->next);
+                }
+                _dm_comb("skip token %s\n", tok->next->rec.data);
 				__d2_skip_tok(ctx, tok->next);
 			}	//if same == combolen
+#ifndef NDEBUG            
+            __d2_dump_tok_list_reverse(ctx->tok_list_last);
+#endif            
 		}
 
 		tok = tok->next;
@@ -470,6 +544,8 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 		start = end + 1;	//out of bounds
 
 	}
+
+    __d2_free_unused_tok_list(ctx, tok); 
 
 #undef len
 

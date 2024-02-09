@@ -87,6 +87,22 @@ e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
 	return E13_OK;
 }
 
+e13_t __d2_free_unused_tok_list(struct d2_ctx* ctx, struct d2_tok* last_tok){
+
+    struct d2_tok* save, *delete;
+
+    save = last_tok->next;
+    last_tok->next = NULL;//terminate the list!
+
+    while(save){
+        delete = save;
+        save = save->next;
+        free(delete);
+    }
+    return E13_OK;
+
+}
+
 e13_t __d2_alloc_tok_databuf_pool(struct d2_ctx *ctx, size_t bufsize)
 {
 	ctx->tok_databuf_pool = (char *)malloc(bufsize);
@@ -145,7 +161,8 @@ e13_t __d2_skip_tok(struct d2_ctx *ctx, struct d2_tok *tok)
 		if (ctx->tok_list_last)
 			ctx->tok_list_last->next = NULL;
 	} else {
-		tok->prev = tok->next;
+		tok->prev->next = tok->next;
+        tok->next->prev = tok->prev;
 	}
 	free(tok->rec.data);
 	free(tok);
