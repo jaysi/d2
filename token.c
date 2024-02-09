@@ -147,10 +147,15 @@ extern "C" {
 	{"print", 1900},
 
 	//operands
+	{"{NUMBER}", 0},
+	{"{STRING}", 0},
+	{"{BLOB}", 0},
 
 	//vars
+	{"{VARIABLE}", 0},
 
 	//fns
+	{"{FUNCTION}", 0},
 
 	//INVAL
 	{NULL}
@@ -267,55 +272,82 @@ e13_t d2_lex(struct d2_tok *tok)
 	return E13_OK;
 }
 
+e13_t __d2_is_combo_tok(d2_tok_enum tok_id)
+{
+	switch (tok_id) {
+	case TOK_BIT_NOT:
+	case TOK_MULT:
+	case TOK_DIV:
+	case TOK_REMAIN:
+	case TOK_ADD:
+	case TOK_SUB:
+	case TOK_LT:
+	case TOK_GT:
+	case TOK_BIT_AND:
+	case TOK_BIT_OR:
+	case TOK_BIT_XOR:
+	case TOK_ASSIGN:
+		return E13_OK;
+		break;
+	default:
+		break;
+	}
+
+	return e13_error(E13_FORMAT);
+}
+
+e13_t __d2_cmp_tok_form(struct d2_tok *tok, d2_tok_enum tok_id)
+{
+	struct d2_tok *tk = tok;
+	int tok_form_len = strlen(d2_tok_form[tok_id].form);
+
+	for (int i = 0; i < tok_form_len; i++) {
+		if (!tk ||
+		    d2_tok_form[tk->rec.code].form[0] !=
+		    d2_tok_form[tok_id].form[i])
+			return e13_error(E13_FORMAT);
+		tk = tk->next;
+	}
+
+	_dm_comb("found one!, id = %i\n", tok_id);
+	return E13_OK;
+}
+
 e13_t d2_combine(struct d2_ctx *ctx)
 {
-	struct d2_tok *tok, *toktmp, *toklist_first = ctx->tok_list_first;
-	int formcnt;
-  int combolen;
+	struct d2_tok *tok;
 	char sci_num[D2_MAX_SCI_NUM];
 
+	d2_tok_enum math_combo_list[] =
+	    { TOK_PLUS1, TOK_MINUS1, TOK_BIT_SHIFT_LEFT, TOK_BIT_SHIFT_RIGHT,
+TOK_LE, TOK_GE, TOK_EQ, TOK_NE, TOK_LOGIC_AND, TOK_LOGIC_OR, TOK_ASSIGN_ADD,
+TOK_ASSIGN_SUB, TOK_ASSIGN_DIV, TOK_ASSIGN_REMAIN, TOK_ASSIGN_BIT_AND,
+TOK_ASSIGN_BIT_XOR, TOK_ASSIGN_BIT_OR, TOK_ASSIGN_BIT_SHIFT_LEFT,
+TOK_ASSIGN_BIT_SHIFT_RIGHT };
+
 	//1. resolve combo operators
-	for (combolen = 3; combolen > 1; combolen--) {
-			for (d2_tok_enum tok_enum = TOK_EMPTY;
-			     d2_tok_form[tok_enum].form; tok_enum++) {
-				if (strlen(d2_tok_form[tok_enum].form) == combolen) {	//filter combos with len = i
-          for(tok = ctx->tok_list_first; tok; tok = tok->next){
-            toktmp = tok;
-					  for (formcnt = 0; formcnt < combolen; formcnt++) {
-              _dm_comb("prev data = %s\n", toktmp->prev->rec.data);
-						  if (toktmp->rec.data[0] == d2_tok_form[tok_enum].
-						    form[formcnt]){
-							    toktmp = toktmp->next;//check next;
-                } else break;//break if not same
-              if(!toktmp) break;
-					  }//for(j)
-            if(formcnt == combolen){//for loop ended normally
+	tok = ctx->tok_list_first;
 
-						tok->rec.code = tok_enum;
-						__d2_realloc_tok_buf(tok,
-								     d2_tok_form
-								     [tok_enum].
-								     form,
-								     strlen
-								     (d2_tok_form
-								      [tok_enum].
-								      form), 0);
+	while (tok) {
+		for (int i = 0;
+		     i < sizeof(math_combo_list) / sizeof(math_combo_list[0]);
+		     i++) {
+			if (__d2_cmp_tok_form(tok, math_combo_list[i]) == E13_OK) {	//for loop ended normally
+				tok->rec.code = math_combo_list[i];
+				__d2_realloc_tok_buf(tok, d2_tok_form[math_combo_list[i]].form, strlen(d2_tok_form[math_combo_list[i]].form), 1);	//free old data?
 
-						if (combolen == 3)
-							__d2_skip_tok(ctx,
-								      tok->
-								      next->next);
-						__d2_skip_tok(ctx, tok->next);
+				if (math_combo_list[i] == TOK_ASSIGN_BIT_SHIFT_LEFT || math_combo_list[i] == TOK_ASSIGN_BIT_SHIFT_RIGHT)	//3 letter combos
+					__d2_skip_tok(ctx, tok->next->next);
+				__d2_skip_tok(ctx, tok->next);
+			}	//if same == combolen
+		}
 
-            }//if same == combolen          
-           
-          }//for(tok)
-				}
-			}
-	}			//resolve combo operators ends
+		tok = tok->next;
+
+	}			//while(tok)
 
 	//resolve else if
-	for (tok = toklist_first; tok; tok = tok->next) {
+	for (tok = ctx->tok_list_first; tok; tok = tok->next) {
 		if (tok->rec.code == TOK_ELSE && tok->next
 		    && tok->next->rec.code == TOK_IF) {
 			tok->rec.code = TOK_ELSE_IF;
@@ -327,18 +359,18 @@ e13_t d2_combine(struct d2_ctx *ctx)
 	}
 
 	//resolve label
-	if (toklist_first &&
-	    toklist_first->rec.code == TOK_STRING &&
-	    toklist_first->next &&
-	    toklist_first->next->rec.code == TOK_LABEL &&
-	    !toklist_first->next->next) {
-		toklist_first->rec.code = TOK_LABEL;
+	if (ctx->tok_list_first &&
+	    ctx->tok_list_first->rec.code == TOK_STRING &&
+	    ctx->tok_list_first->next &&
+	    ctx->tok_list_first->next->rec.code == TOK_LABEL &&
+	    !ctx->tok_list_first->next->next) {
+		ctx->tok_list_first->rec.code = TOK_LABEL;
 
-		__d2_skip_tok(ctx, toklist_first->next);
+		__d2_skip_tok(ctx, ctx->tok_list_first->next);
 	}
 
 	//2. resolve scientific numbers
-	for (tok = toklist_first; tok; tok = tok->next) {
+	for (tok = ctx->tok_list_first; tok; tok = tok->next) {
 		if (tok->rec.code == TOK_STRING) {
 			//these 3 lines already done in tokenize
 			//errno = 0;
