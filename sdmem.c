@@ -33,7 +33,9 @@ int sdmem_init(struct sdmem_s *ctl, char *buf, size_t size, size_t n)
 
 size_t __d2_get_tok_databuf_poolsize(char *buf, size_t ntok)
 {
-	return strlen(buf) + (ntok) + 1;
+  //there is no datapoo, in currrent setup
+  return 0UL;
+	//return strlen(buf) + (ntok) + 1;
 }
 
 e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf)
@@ -80,7 +82,9 @@ e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
 			ctx->tok_list_last = tok;
 		}
 
-	}
+    tok->rec.data = NULL;
+
+	}//for i < ntok
 
 	ctx->tok_list_cur = NULL;
 
@@ -90,6 +94,8 @@ e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
 e13_t __d2_free_unused_tok_list(struct d2_ctx* ctx, struct d2_tok* last_tok){
 
     struct d2_tok* save, *delete;
+
+    ctx->tok_list_last = last_tok;
 
     save = last_tok->next;
     last_tok->next = NULL;//terminate the list!
@@ -105,15 +111,22 @@ e13_t __d2_free_unused_tok_list(struct d2_ctx* ctx, struct d2_tok* last_tok){
 
 e13_t __d2_alloc_tok_databuf_pool(struct d2_ctx *ctx, size_t bufsize)
 {
+  //there is no datapool in the current memmory manager setup
+  ctx->tok_databuf_pool = NULL;
+  return E13_OK;
+  /*
 	ctx->tok_databuf_pool = (char *)malloc(bufsize);
 	if (!ctx->tok_databuf_pool)
 		return e13_error(E13_NOMEM);
 	return E13_OK;
+  */
 }
 
 struct d2_tok *__d2_enumset_tok_buf(struct d2_ctx *ctx, char *data,
 				    size_t datasize)
 {
+
+  assert(ctx->tok_list_cur != ctx->tok_list_last);
 
 	if (!ctx->tok_list_cur) {
 		ctx->tok_list_cur = ctx->tok_list_first;

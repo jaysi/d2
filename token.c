@@ -41,7 +41,7 @@ int main() {
 #define dm _dm
 #define dm_tok1(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
 #define dm_tok2 _dm
-#define dm_tok3(fmt, ...)	//fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_tok3(fmt, ...)
 #define _dm_comb _dm
 #ifdef __cplusplus
 extern "C" {
@@ -354,7 +354,7 @@ e13_t __d2_dump_tok_list(struct d2_tok* tok){
     struct d2_tok* tk = tok;
     _dm_flat("%s", "*** token list dump { ");
     while(tk){
-        _dm_flat("%s ", tk->rec.data);
+        _dm_flat("%s(%p) ", tk->rec.data, tk);
         tk = tk->next;
     }
     _dm_flat("%s", " } token list dump ***\n");
@@ -366,7 +366,7 @@ e13_t __d2_dump_tok_list_reverse(struct d2_tok* tok){
     struct d2_tok* tk = tok;
     _dm_flat("%s", "*** reverse token list dump { ");
     while(tk){
-        _dm_flat("%s ", tk->rec.data);
+        _dm_flat("(%p)%s ", tk, tk->rec.data);
         tk = tk->prev;
     }
     _dm_flat("%s", " } reverse token list dump ***\n");
