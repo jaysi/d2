@@ -2,10 +2,10 @@
 #include "error13.h"
 #include "dmsg.h"
 
-#define dm_pre1 _dm
-#define dm_pre2 _dm
-#define dm_pre_pop _dm
-#define PRINT_PREFIX
+#define dm_pre1(fmt, ...)
+#define dm_pre2(fmt, ...)
+#define dm_pre_pop(fmt, ...)
+#undef PRINT_PREFIX
 extern int __d2_tok_preced(d2_tok_enum code);
 e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok)
 {

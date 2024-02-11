@@ -5,7 +5,7 @@
 #include "lock.h"
 #include "dmsg.h"
 
-#define __dm_run_ctx _dm
+#define __dm_run_ctx(fmt, ...)
 
 #ifdef __cplusplus
 extern "C" {

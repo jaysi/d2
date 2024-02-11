@@ -1,11 +1,12 @@
 #include "error13.h"
 #include "d2.h"
 #include "dmsg.h"
+#include <errno.h>
 
 //TODO: temporary, replace
 #define d2_perr(handle, fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
-#define __dm_calc	_dm
-#define __dm_enum	_dm
+#define __dm_calc _dm
+#define __dm_enum(fmt, ...)
 
 extern e13_t __d2_add_ret(struct d2_ctx *ctx, struct d2_exp *exp);
 extern e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok);
@@ -14,6 +15,26 @@ extern e13_t __d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1,
 extern void __d2_push_tok(struct d2_exp *exp, struct d2_tok *tok);
 e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val);
 e13_t d2_assign_var(struct d2_ctx *ctx, struct d2_tok *tok, long double *val);
+
+e13_t __d2_strtold(char* data, fnum_t* val){
+    /*
+    char const * const str = "blah";
+    char const * endptr;
+
+    int n = strtol(str, &endptr, 0);
+
+    if (endptr == str) {  no conversion was performed  }
+
+    else if (*endptr == '\0') { the entire string was converted }
+
+    else {  the unconverted rest of the string starts at endptr }    
+    */
+    char* endptr;
+    errno = 0;
+    *val = strtold(data, &endptr);
+    if(errno || *endptr != '\0') return e13_error(E13_FORMAT);
+    return E13_OK;
+}
 
 e13_t __d2_tok_val(struct d2_ctx *ctx, struct d2_tok *tok, long double *val)
 {
@@ -268,7 +289,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				     __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
-				__d2_assign_tok_val(ctx, poptok2, val2 < val1);
+				__d2_assign_tok_val(ctx, poptok2, val1 < val2);
 				poptok2->rec.code = TOK_NUMBER;
 				__d2_push_tok(exp, poptok2);
 			}
@@ -287,7 +308,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				     __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
-				__d2_assign_tok_val(ctx, poptok2, val2 <= val1);
+				__d2_assign_tok_val(ctx, poptok2, val1 <= val2);
 				poptok2->rec.code = TOK_NUMBER;
 				__d2_push_tok(exp, poptok2);
 			}
@@ -306,7 +327,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				     __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
-				__d2_assign_tok_val(ctx, poptok2, val2 > val1);
+				__d2_assign_tok_val(ctx, poptok2, val1 > val2);
 				poptok2->rec.code = TOK_NUMBER;
 				__d2_push_tok(exp, poptok2);
 			}
@@ -325,7 +346,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				     __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
-				__d2_assign_tok_val(ctx, poptok2, val2 >= val1);
+				__d2_assign_tok_val(ctx, poptok2, val1 >= val2);
 				poptok2->rec.code = TOK_NUMBER;
 				__d2_push_tok(exp, poptok2);
 			}
@@ -344,7 +365,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				     __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
-				__d2_assign_tok_val(ctx, poptok2, val2 == val1);
+				__d2_assign_tok_val(ctx, poptok2, val1 == val2);
 				poptok2->rec.code = TOK_NUMBER;
 				__d2_push_tok(exp, poptok2);
 			}
@@ -363,7 +384,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				     __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
-				__d2_assign_tok_val(ctx, poptok2, val2 != val1);
+				__d2_assign_tok_val(ctx, poptok2, val1 != val2);
 				poptok2->rec.code = TOK_NUMBER;
 				__d2_push_tok(exp, poptok2);
 			}
@@ -484,15 +505,37 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				__d2_push_tok(exp, poptok1);
 			}
 			break;
+        case TOK_ASSIGN_ADD:
+		break;
+        case TOK_ASSIGN_SUB:
+		break;
+        case TOK_ASSIGN_MULT:
+		break;
+        case TOK_ASSIGN_DIV:
+		break;
+        case TOK_ASSIGN_REMAIN:
+		break;
+        case TOK_ASSIGN_BIT_SHIFT_LEFT:
+		break;
+        case TOK_ASSIGN_BIT_SHIFT_RIGHT:
+		break;
+        case TOK_ASSIGN_BIT_AND:
+		break;
+        case TOK_ASSIGN_BIT_XOR:
+		break;
+        case TOK_ASSIGN_BIT_OR:
+		break;
 
-		case TOK_NUMBER:
 		case TOK_STRING:
+			//TODO: this is so ugly to try resolve vars each time you run !
+			if(d2_var_val(ctx, enumtok->rec.data, &enumtok->dval) == E13_OK) enumtok->rec.code = TOK_VAR;
+		case TOK_NUMBER:
 		case TOK_VAR:
 			__d2_push_tok(exp, enumtok);
 			break;
 
 		default:
-			//ignore                
+			//ignore
 			break;
 
 		}

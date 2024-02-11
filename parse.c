@@ -2,8 +2,8 @@
 #include "error13.h"
 #include "dmsg.h"
 
-#define dm_exp1 _dm
-#define dm_print_tok _dm
+#define dm_exp1(fmt, ...)
+#define dm_print_tok(fmt, ...)
 
 struct d2_tok *d2_blockize(struct d2_tok *first)
 {

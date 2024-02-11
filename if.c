@@ -83,7 +83,7 @@ void d2_print_ctx_list(struct d2_handle *h)
 	d2_lock_ctx(h);
 	ctx = h->ctxlist_first;
 	while (ctx) {
-		d2_print(h, "\t%s\n", ctx->name);
+		d2_print(h, "\t%s: %s\n", ctx->name, ctx->buf);
 		ctx = ctx->next;
 	}
 	d2_unlock_ctx(h);
@@ -99,9 +99,10 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 	while (ctx) {
 		if (!strcmp(ctx->name, arg1)) {
 			assert(ctx);
-			assert(ctx->ret_list_first);
+			//assert(ctx->ret_list_first);
 
 			ret = ctx->ret_list_first;
+            d2_print(h, "buffer: %s\n", ctx->buf);
 			while (ret) {
 				switch (ctx->ret_list_first->tok.rec.code) {
 				case TOK_NUMBER:
@@ -209,6 +210,10 @@ void d2_console_if(struct d2_handle *h)
 					 arg1, er);
 				break;
 			}
+            if(arg2[strlen(arg2)-1] != ';'){
+                //d2_print(h, "terminating buffer (%li, %c)\n", strlen(arg2), arg2[strlen(arg2)-1]);
+                strcat(arg2, ";");
+            }
 			er = d2_set_ctx_buf(h, arg1, arg2, strlen(arg2) + 1,
 					    D2_CTXF_COPY_BUF);
 			if (er != E13_OK) {
@@ -260,6 +265,10 @@ void d2_console_if(struct d2_handle *h)
 			break;
 
 		case 's':
+            if(arg2[strlen(arg2)-1] != ';'){
+                //d2_print(h, "terminating buffer (%li, %c)\n", strlen(arg2), arg2[strlen(arg2)-1]);
+                strcat(arg2, ";");
+            }
 			switch (d2_set_ctx_buf
 				(h, arg1, arg2, strlen(arg2) + 1,
 				 D2_CTXF_COPY_BUF)) {

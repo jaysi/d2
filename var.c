@@ -2,19 +2,23 @@
 
 #include "error13.h"
 #include "d2.h"
+#include "dmsg.h"
 
-#define dm_var1(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
+#define dm_var1 _dm
+#define dm_var2 _dm_flat
 
 e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val)
 {
 	struct d2_var *var;
-	dm_var1("getting varval of %s\n", name);
+	dm_var1("getting varval of %s...", name);
 	for (var = ctx->var_list_first; var; var = var->next) {
 		if (!strcmp(var->name, name)) {
 			*val = var->val;
+            dm_var2("found %Lf\n", *val);
 			return E13_OK;
 		}
 	}
+    dm_var2("%s", "not found\n");
 	return e13_error(E13_NOTFOUND);
 }
 
