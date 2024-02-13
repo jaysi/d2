@@ -71,6 +71,7 @@ e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
 			return e13_error(E13_NOMEM);
 		}
 		tok->next = NULL;
+        tok->var = NULL;
 
 		if (!ctx->tok_list_first) {
 			tok->prev = NULL;

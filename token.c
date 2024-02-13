@@ -189,6 +189,7 @@ extern "C" {
 
 	//vars
 	{"{VARIABLE}", 0},
+    {"{STRING_VARIABLE}", 0},
 
 	//fns
 	{"{FUNCTION}", 0},
@@ -519,7 +520,7 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 			//init tok ptr
 			//tok = &toks[(ctx->ntok)++];                   
 
-			tok = __d2_enumset_tok_buf(ctx, start, len);
+			tok = __d2_enumset_tok_buf(ctx, start, len);            
 
 			//phase b, lexical analysis 1 (2 is done via combine())
 			tok->rec.code = TOK_EMPTY;
@@ -540,7 +541,7 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 				errno = 0;
 				if (__d2_strtold(tok->rec.data, &tok->dval) == E13_OK)
 					tok->rec.code = TOK_NUMBER;
-				else if(d2_var_val(ctx, tok->rec.data, &tok->dval) == E13_OK)
+				else if(d2_var_val(ctx, tok->rec.data, &tok->dval) == E13_OK)//TODO: unnecessary??
 					tok->rec.code = TOK_VAR;
 				else           
 					tok->rec.code = TOK_STRING;

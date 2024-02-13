@@ -221,6 +221,7 @@ typedef enum {
 
 	//VAR, THIS IS THE OPERATOR/OPERAND SEPARATOR! DON'T DO ANYTHING WRONG!!
 	TOK_VAR,
+    TOK_STRING_VAR,
 
 	//FUNCTIONS
 	TOK_KEYWORD,
@@ -245,6 +246,8 @@ struct d2_tok {
 	struct d2_tok *prefix_next, *prefix_prev;	//prefix handler
 	struct d2_tok *stack_next;
 	struct d2_tok *ret_next;
+
+    struct d2_var* var;//var ptr, this token was originally a variable!
 };
 
 #ifdef __cplusplus

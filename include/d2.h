@@ -31,8 +31,13 @@ struct d2_exp {
 	struct d2_exp *next, *prev;
 };
 
+#define D2_VARTYPE_NUMBER   0x01
+#define D2_VARTYPE_STRING   0x02
+
 struct d2_var {
-	char *name;
+    char type;
+	char* name;
+    char* data;
 	long double val;
 	struct d2_var *next;
 };

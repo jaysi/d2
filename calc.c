@@ -17,23 +17,23 @@ e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val);
 e13_t d2_assign_var(struct d2_ctx *ctx, struct d2_tok *tok, long double *val);
 
 e13_t __d2_strtold(char* data, fnum_t* val){
-    /*
-    char const * const str = "blah";
-    char const * endptr;
+	/*
+	char const * const str = "blah";
+	char const * endptr;
 
-    int n = strtol(str, &endptr, 0);
+	int n = strtol(str, &endptr, 0);
 
-    if (endptr == str) {  no conversion was performed  }
+	if (endptr == str) {  no conversion was performed  }
 
-    else if (*endptr == '\0') { the entire string was converted }
+	else if (*endptr == '\0') { the entire string was converted }
 
-    else {  the unconverted rest of the string starts at endptr }    
-    */
-    char* endptr;
-    errno = 0;
-    *val = strtold(data, &endptr);
-    if(errno || *endptr != '\0') return e13_error(E13_FORMAT);
-    return E13_OK;
+	else {  the unconverted rest of the string starts at endptr }    
+	*/
+	char* endptr;
+	errno = 0;
+	*val = strtold(data, &endptr);
+	if(errno || *endptr != '\0') return e13_error(E13_FORMAT);
+	return E13_OK;
 }
 
 e13_t __d2_tok_val(struct d2_ctx *ctx, struct d2_tok *tok, long double *val)
@@ -58,6 +58,44 @@ void __d2_assign_tok_val(struct d2_ctx *ctx, struct d2_tok *tok,
 	tok->dval = val;
 }
 
+e13_t __d2_assert_2tok(d2_tok_enum tokid, struct d2_tok* tok1, struct d2_tok* tok2){
+	switch(tokid){
+		case TOK_PLUS1:
+		case TOK_MINUS1:
+		case TOK_LOGIC_NOT:
+		case TOK_BIT_NOT:
+			if(tok1->rec.code != TOK_NUMBER || tok1->rec.code != TOK_VAR)
+				return e13_error(E13_FORMAT);
+		break;
+		case TOK_MULT:
+		case TOK_DIV:
+		case TOK_REMAIN:
+		case TOK_ADD:
+		case TOK_SUB:
+		case TOK_BIT_SHIFT_LEFT:
+		case TOK_BIT_SHIFT_RIGHT:
+		case TOK_LT:
+		case TOK_LE:
+		case TOK_GT:
+		case TOK_GE:
+		case TOK_EQ:
+		case TOK_NE:
+		case TOK_BIT_AND:
+		case TOK_BIT_XOR:
+		case TOK_BIT_OR:
+		case TOK_LOGIC_AND:
+		case TOK_LOGIC_OR:
+				
+			if(	tok1->rec.code != TOK_NUMBER || tok1->rec.code != TOK_VAR ||
+				tok2->rec.code != TOK_NUMBER || tok2->rec.code != TOK_VAR)
+					return e13_error(E13_FORMAT);
+
+		default:
+		break;
+	}
+	return E13_OK;
+}
+
 e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 {
 	struct d2_tok *enumtok, *poptok1, *poptok2;
@@ -78,7 +116,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok1, val1 + 1);
@@ -92,7 +130,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok1, val1 - 1);
@@ -106,7 +144,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok1, !val1);
@@ -120,13 +158,13 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok1,
-						    (long
-						     double)(~(long
-							       long)(val1)));
+							(long
+							 double)(~(long
+								   long)(val1)));
 				__d2_push_tok(exp, poptok1);
 			}
 			break;
@@ -137,11 +175,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val2 * val1);
@@ -156,11 +194,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val2 / val1);
@@ -175,15 +213,15 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2,
-						    (long double)((long long)
+							(long double)((long long)
 								  val2 %
 								  (long long)
 								  val1));
@@ -198,11 +236,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val2 + val1);
@@ -217,11 +255,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val2 - val1);
@@ -236,15 +274,15 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2,
-						    (long double)((long long)
+							(long double)((long long)
 								  val2 << (long
 									   long)
 								  val1));
@@ -259,15 +297,15 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2,
-						    (long double)((long long)
+							(long double)((long long)
 								  val2 >> (long
 									   long)
 								  val1));
@@ -282,11 +320,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val1 < val2);
@@ -301,11 +339,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val1 <= val2);
@@ -320,11 +358,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val1 > val2);
@@ -339,11 +377,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val1 >= val2);
@@ -358,11 +396,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val1 == val2);
@@ -377,11 +415,11 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2, val1 != val2);
@@ -396,15 +434,15 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2,
-						    (long double)((long long)
+							(long double)((long long)
 								  val2 & (long
 									  long)
 								  val1));
@@ -419,15 +457,15 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2,
-						    (long double)((long long)
+							(long double)((long long)
 								  val2 | (long
 									  long)
 								  val1));
@@ -442,15 +480,15 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2,
-						    (long double)((long long)
+							(long double)((long long)
 								  val2
 								  && (long long)
 								  val1));
@@ -465,15 +503,15 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				return e13_error(E13_SYNTAX);
 			} else {
 				if ((err =
-				     __d2_tok_val(ctx, poptok1,
+					 __d2_tok_val(ctx, poptok1,
 						  &val1)) != E13_OK)
 					return err;
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
+					 __d2_tok_val(ctx, poptok2,
 						  &val2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok2,
-						    (long double)((long long)
+							(long double)((long long)
 								  val2
 								  || (long long)
 								  val1));
@@ -492,38 +530,35 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 				__dm_calc("%s\n", "not enough tokens!");
 				d2_perr(NULL, "%s\n", "syntax error");
 				return e13_error(E13_SYNTAX);
-			} else {
+			} else {				
+
 				if ((err =
-				     __d2_tok_val(ctx, poptok2,
-						  &val2)) != E13_OK)
-					return err;
-				if ((err =
-				     d2_assign_var(ctx, poptok1,
-						   &val2)) != E13_OK)
+					d2_assign_var(ctx, poptok1,
+						poptok2)) != E13_OK)
 					return err;
 				__d2_assign_tok_val(ctx, poptok1, val2);
 				__d2_push_tok(exp, poptok1);
-			}
+
 			break;
-        case TOK_ASSIGN_ADD:
+		case TOK_ASSIGN_ADD:
 		break;
-        case TOK_ASSIGN_SUB:
+		case TOK_ASSIGN_SUB:
 		break;
-        case TOK_ASSIGN_MULT:
+		case TOK_ASSIGN_MULT:
 		break;
-        case TOK_ASSIGN_DIV:
+		case TOK_ASSIGN_DIV:
 		break;
-        case TOK_ASSIGN_REMAIN:
+		case TOK_ASSIGN_REMAIN:
 		break;
-        case TOK_ASSIGN_BIT_SHIFT_LEFT:
+		case TOK_ASSIGN_BIT_SHIFT_LEFT:
 		break;
-        case TOK_ASSIGN_BIT_SHIFT_RIGHT:
+		case TOK_ASSIGN_BIT_SHIFT_RIGHT:
 		break;
-        case TOK_ASSIGN_BIT_AND:
+		case TOK_ASSIGN_BIT_AND:
 		break;
-        case TOK_ASSIGN_BIT_XOR:
+		case TOK_ASSIGN_BIT_XOR:
 		break;
-        case TOK_ASSIGN_BIT_OR:
+		case TOK_ASSIGN_BIT_OR:
 		break;
 
 		case TOK_STRING:
