@@ -189,7 +189,7 @@ extern "C" {
 
 	//vars
 	{"{VARIABLE}", 0},
-    {"{STRING_VARIABLE}", 0},
+	{"{STRING_VARIABLE}", 0},
 
 	//fns
 	{"{FUNCTION}", 0},
@@ -285,7 +285,34 @@ char *__d2_token(char *start, char delim[], char esc, char pack1, char pack2)
 
 e13_t d2_lex(struct d2_tok *tok)
 {
+	struct d2_tok_form_s *form;
 
+	tok->rec.code = TOK_EMPTY;
+
+	form = d2_tok_form;
+	for (d2_tok_enum tokenum = TOK_EMPTY; form->form;
+			form++, tokenum++) {
+
+		dm_tok3("%s->%s\n", form->form, tok->rec.data);
+
+		if (!strcmp(form->form, tok->rec.data)) {
+			tok->rec.code = tokenum;
+			break;
+		}
+	}
+
+	if (!form->form) {
+		errno = 0;
+		if (__d2_strtold(tok->rec.data, &tok->dval) == E13_OK)
+			tok->rec.code = TOK_NUMBER;
+		else if(d2_var_val(ctx, tok->rec.data, &tok->dval) == E13_OK)//TODO: unnecessary??
+			tok->rec.code = TOK_VAR;
+		else           
+			tok->rec.code = TOK_STRING;
+	}
+
+	dm_tok2("ntok = %li, data = %s, code = %i\n",
+		ctx->ntoks, tok->rec.data, tok->rec.code);
 	return E13_OK;
 }
 
@@ -480,8 +507,7 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 {
 
 	struct d2_tok *tok;
-	char *start, *end;
-	struct d2_tok_form_s *form;
+	char *start, *end;	
 
 	//TODO: this is so dirty! do not terminate the buffer and the entire pricess terminates! (SEGV)
 	dm_tok4("strlen ctx->buf = %li - (%c)\n", strlen(ctx->buf), ctx->buf[strlen(ctx->buf)-1]);
@@ -523,32 +549,7 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 			tok = __d2_enumset_tok_buf(ctx, start, len);            
 
 			//phase b, lexical analysis 1 (2 is done via combine())
-			tok->rec.code = TOK_EMPTY;
-
-			form = d2_tok_form;
-			for (d2_tok_enum tokenum = TOK_EMPTY; form->form;
-				 form++, tokenum++) {
-
-				dm_tok3("%s->%s\n", form->form, tok->rec.data);
-
-				if (!strcmp(form->form, tok->rec.data)) {
-					tok->rec.code = tokenum;
-					break;
-				}
-			}
-
-			if (!form->form) {
-				errno = 0;
-				if (__d2_strtold(tok->rec.data, &tok->dval) == E13_OK)
-					tok->rec.code = TOK_NUMBER;
-				else if(d2_var_val(ctx, tok->rec.data, &tok->dval) == E13_OK)//TODO: unnecessary??
-					tok->rec.code = TOK_VAR;
-				else           
-					tok->rec.code = TOK_STRING;
-			}
-
-			dm_tok2("ntok = %li, data = %s, code = %i\n",
-				ctx->ntoks, tok->rec.data, tok->rec.code);
+			d2_lex(tok);
 
 		}		//if(*end && !isspace(*end))
 
