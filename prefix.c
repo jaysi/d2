@@ -7,57 +7,18 @@
 #define dm_pre_pop(fmt, ...)
 #undef PRINT_PREFIX
 extern int __d2_tok_preced(d2_tok_enum code);
-e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok)
-{
 
-	//dm_pre_pop("pop exp->stacktop = %s (will update)\n", !exp->stack_top?"NULL":exp->stack_top->rec.data);
-	if (!exp->stack_top)
-		return e13_error(E13_EMPTY);
-	*tok = exp->stack_top;
-	exp->stack_top = exp->stack_top->stack_next;
-	return E13_OK;
-}
-
+#ifdef __cplusplus
+extern "C" {
+#endif
+e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok);
 e13_t
-__d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1, struct d2_tok **tok2)
-{
-
-	//dm_pre_pop("pop exp->stacktop = %s (will update)\n", !exp->stack_top?"NULL":exp->stack_top->rec.data);
-	if (!exp->stack_top || !exp->stack_top->stack_next)
-		return e13_error(E13_EMPTY);
-	*tok1 = exp->stack_top;
-	exp->stack_top = exp->stack_top->stack_next;
-	*tok2 = exp->stack_top;
-	exp->stack_top = exp->stack_top->stack_next;
-	return E13_OK;
+__d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1, struct d2_tok **tok2);
+void __d2_push_tok(struct d2_exp *exp, struct d2_tok *tok);
+void __d2_appand_postfix(struct d2_exp *exp, struct d2_tok *tok);
+#ifdef __cplusplus
 }
-
-void __d2_push_tok(struct d2_exp *exp, struct d2_tok *tok)
-{
-	tok->stack_next = NULL;
-	if (!exp->stack_top)
-		exp->stack_top = tok;
-
-	else {
-		tok->stack_next = exp->stack_top;
-		exp->stack_top = tok;
-	}
-}
-
-void __d2_appand_postfix(struct d2_exp *exp, struct d2_tok *tok)
-{
-	if (!exp->prefix_tok_first) {
-		tok->prefix_prev = NULL;
-		tok->prefix_next = NULL;
-		exp->prefix_tok_first = tok;
-		exp->prefix_tok_last = exp->prefix_tok_first;
-	} else {
-		tok->prefix_next = NULL;
-		tok->prefix_prev = exp->prefix_tok_last;
-		exp->prefix_tok_last->prefix_next = tok;
-		exp->prefix_tok_last = tok;
-	}
-}
+#endif
 
 void __d2_print_prefix(struct d2_exp *exp)
 {
