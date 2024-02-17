@@ -72,7 +72,7 @@ void d2_print_console_help(struct d2_handle *h)
 	d2_print(h, "%s", "u <name>\t\trun context\n");
 	d2_print(h, "%s", "p <name>\t\tprint context results\n");
 	d2_print(h, "%s", "b <name>\t\tprint context buffer\n");
-  d2_print(h, "%s", "' \t\tbuffered input mode\n");
+  d2_print(h, "%s", "' \t\t\tbuffered input mode\n");
 	d2_print(h, "%s", "q\t\t\tquit\n");
 
 }

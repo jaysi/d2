@@ -485,20 +485,28 @@ e13_t d2_combine(struct d2_ctx *ctx)
 			if(tok->next && tok->next->next &&
 				(tok->next->rec.code == TOK_ADD || tok->next->rec.code == TOK_SUB) &&
 				(tok->next->next->rec.code == TOK_NUMBER || tok->next->next->rec.code == TOK_VAR)){
-			  	
+			  	if(tok->next->rec.code == TOK_SUB){
+                    if(tok->next->next->rec.code == TOK_NUMBER) tok->next->next->dval *= -1;
+                    else tok->next->next->flags |= D2_TOKF_NEGATIVE;//for VARIABLE
+                }
+                __d2_skip_tok(ctx, tok->next);//skip sign anyways!
 			}
 		}
 
-		//3b. resolve sign ?-+?
+		//3b. resolve sign ?-+?, already removed -- and ++ above!
 		if(tok->rec.code == TOK_NUMBER){
 			if(tok->next && tok->next->next && tok->next->next->next &&
 				(tok->next->rec.code == TOK_ADD || tok->next->rec.code == TOK_SUB) &&
 				(tok->next->next->rec.code == TOK_ADD || tok->next->next->rec.code == TOK_SUB) &&
-				(tok->next->next->next->rec.code == TOK_NUMBER || tok->next->next->next->rec.code == TOK_VAR)){			
-        
+				(tok->next->next->next->rec.code == TOK_NUMBER || tok->next->next->next->rec.code == TOK_VAR)){
+                if(tok->next->next->rec.code == TOK_SUB){
+                    if (tok->next->next->next->rec.code == TOK_NUMBER) tok->next->next->next->dval *= -1;
+                    else tok->next->next->next->flags |= D2_TOKF_NEGATIVE;//for VARIABLE
+                }
+                __d2_skip_tok(ctx, tok->next->next);
 			}
-		}		
-	}	
+		}
+	}
 
 	return E13_OK;
 }
