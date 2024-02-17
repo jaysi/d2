@@ -12,8 +12,8 @@ e13_t d2_get_tok_varptr(struct d2_ctx* ctx, struct d2_tok* tok){
 	dm_var1("getting varptr of %s...", tok->rec.data);
 	for (var = ctx->var_list_first; var; var = var->next) {
 		if (!strcmp(var->name, tok->rec.data)) {
-			tok->var = var
-            dm_var2("found\n",);
+			tok->var = var;
+            dm_var2("%s", "found\n");
 			return E13_OK;
 		}
 	}
@@ -55,7 +55,7 @@ e13_t d2_assign_var(struct d2_ctx *ctx, struct d2_tok *tok, struct d2_tok* valto
 
 	dm_var1("assign var %s\n", tok->rec.data);
 
-	if (__d2_set_var(ctx, tok->rec.data, *val) == E13_OK)
+	if (__d2_set_var(ctx, tok->rec.data, valtok->dval) == E13_OK)
 		return E13_OK;
 
 	if (tok->rec.code != TOK_STRING)
@@ -70,7 +70,7 @@ e13_t d2_assign_var(struct d2_ctx *ctx, struct d2_tok *tok, struct d2_tok* valto
 
 	var->name = (char *)malloc(strlen(tok->rec.data) + 1);
 	strcpy(var->name, tok->rec.data);
-	var->val = *val;
+	var->val = valtok->dval;
 	var->next = NULL;
 
 	if (!ctx->var_list_first) {

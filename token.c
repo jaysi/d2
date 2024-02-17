@@ -283,7 +283,7 @@ char *__d2_token(char *start, char delim[], char esc, char pack1, char pack2)
 	this lex was not used actually! it is done inside the tokenize()
 */
 
-e13_t d2_lex(struct d2_tok *tok)
+e13_t d2_lex(struct d2_ctx* ctx, struct d2_tok *tok)
 {
 	struct d2_tok_form_s *form;
 
@@ -485,7 +485,7 @@ e13_t d2_combine(struct d2_ctx *ctx)
 			if(tok->next && tok->next->next &&
 				(tok->next->rec.code == TOK_ADD || tok->next->rec.code == TOK_SUB) &&
 				(tok->next->next->rec.code == TOK_NUMBER || tok->next->next->rec.code == TOK_VAR)){
-				
+			  	
 			}
 		}
 
@@ -495,7 +495,7 @@ e13_t d2_combine(struct d2_ctx *ctx)
 				(tok->next->rec.code == TOK_ADD || tok->next->rec.code == TOK_SUB) &&
 				(tok->next->next->rec.code == TOK_ADD || tok->next->next->rec.code == TOK_SUB) &&
 				(tok->next->next->next->rec.code == TOK_NUMBER || tok->next->next->next->rec.code == TOK_VAR)){			
-
+        
 			}
 		}		
 	}	
@@ -549,7 +549,7 @@ e13_t d2_tokenize(struct d2_ctx *ctx)
 			tok = __d2_enumset_tok_buf(ctx, start, len);            
 
 			//phase b, lexical analysis 1 (2 is done via combine())
-			d2_lex(tok);
+			d2_lex(ctx, tok);
 
 		}		//if(*end && !isspace(*end))
 

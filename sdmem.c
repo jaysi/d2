@@ -72,6 +72,7 @@ e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok)
 		}
 		tok->next = NULL;
         tok->var = NULL;
+    tok->flags = D2_TOKF_INIT;
 
 		if (!ctx->tok_list_first) {
 			tok->prev = NULL;

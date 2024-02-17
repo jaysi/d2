@@ -14,7 +14,7 @@ extern e13_t __d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1,
 			   struct d2_tok **tok2);
 extern void __d2_push_tok(struct d2_exp *exp, struct d2_tok *tok);
 e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val);
-e13_t d2_assign_var(struct d2_ctx *ctx, struct d2_tok *tok, long double *val);
+e13_t d2_assign_var(struct d2_ctx *ctx, struct d2_tok *tok, struct d2_tok* tok1);
 
 e13_t __d2_strtold(char* data, fnum_t* val){
 	/*
@@ -340,7 +340,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 					return err;
 				__d2_assign_tok_val(ctx, poptok1, val2);
 				__d2_push_tok(exp, poptok1);
-
+      }
 			break;
 		case TOK_ASSIGN_ADD:
 		break;

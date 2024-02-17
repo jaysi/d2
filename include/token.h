@@ -237,8 +237,12 @@ struct d2_rec {
 	char *data;		//also written to disk! nbo in short, long, long long and float
 };
 
+#define D2_TOKF_INIT  0x00
+#define D2_TOKF_NEGATIVE  (0x01<<0)
+
 struct d2_tok {
 	//long long ival;
+  char flags;
 	long double dval;
 	struct d2_rec rec;
 	struct d2_tok *next, *prev;
