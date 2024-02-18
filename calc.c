@@ -340,7 +340,7 @@ e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp)
 					return err;
 				__d2_assign_tok_val(ctx, poptok1, val2);
 				__d2_push_tok(exp, poptok1);
-      }
+              }
 			break;
 		case TOK_ASSIGN_ADD:
 		break;

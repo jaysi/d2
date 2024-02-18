@@ -34,6 +34,7 @@ extern "C" {
 	e13_t d2_expize(struct d2_ctx *ctx, struct d2_exp *parent);
 	e13_t d2_infix2prefix(struct d2_exp *exp);
 	e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
+    e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val);
 
 #ifdef __cplusplus
 }
@@ -95,6 +96,7 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 {
 	struct d2_var *var;
 	struct d2_ret *ret;
+    //fnum_t val;
 	d2_lock_ctx(h);
 	struct d2_ctx *ctx = h->ctxlist_first;
 	while (ctx) {
@@ -116,7 +118,7 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 					break;
 				case TOK_VAR:
 					d2_print(h, "return var: %s = %Lf\n",
-						 ret->tok.rec.data,
+						 ret->tok.rec.data,                         
 						 ret->tok.dval);
 					break;
 				default:
