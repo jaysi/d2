@@ -34,14 +34,6 @@ struct d2_exp {
 #define D2_VARTYPE_NUMBER   0x01
 #define D2_VARTYPE_STRING   0x02
 
-struct d2_var {
-    char type;
-	char* name;
-    char* data;
-	long double val;
-	struct d2_var *next;
-};
-
 struct d2_ret {
 	struct d2_tok tok;
 	struct d2_ret *next;
@@ -93,5 +85,37 @@ struct d2_handle {
 	FILE *fin, *fout, *ferr;
 
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+    /* ctx struct is defined here, we put export list here too! */
+	e13_t d2_init_ctx(struct d2_handle *h, struct d2_ctx *ctx, char *buf,
+			  size_t bufsize, char flags);
+	e13_t d2_rm_ctx(struct d2_handle *h, char *name);
+	e13_t d2_find_ctx(struct d2_handle *h, char *name);
+	e13_t d2_new_ctx(struct d2_handle *h, char *name);
+	e13_t d2_set_ctx_buf(struct d2_handle *h, char *name, char *buf,
+			     size_t bufsize, char flags);
+	e13_t d2_rst_ctx(struct d2_handle *h, char *name);
+	e13_t d2_run_ctx(struct d2_handle *h, char *name);
+
+    /* we put parser.c functions here too! */
+
+	struct d2_tok *d2_blockize(struct d2_tok *first);
+	e13_t d2_tokenize(struct d2_ctx* ctx);
+	e13_t d2_combine(struct d2_ctx* ctx);
+	e13_t d2_lex(struct d2_ctx* ctx, struct d2_tok *tok);
+	e13_t d2_expize(struct d2_ctx *ctx, struct d2_exp *parent);
+	e13_t d2_infix2prefix(struct d2_exp *exp);
+
+    /* put this calc.c function here too! */    
+    e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
+    e13_t __d2_strtold(char* data, fnum_t* val);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif				//D2_H

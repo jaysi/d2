@@ -1,24 +1,12 @@
-#include "d2.h"
 #include "error13.h"
-#include "dmsg.h"
+#include "include/d2.h"
+#include "include/dmsg.h"
+#include "include/sdmem.h"
 
 #define dm_pre1(fmt, ...)
 #define dm_pre2(fmt, ...)
 #define dm_pre_pop(fmt, ...)
 #undef PRINT_PREFIX
-extern int __d2_tok_preced(d2_tok_enum code);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok);
-e13_t
-__d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1, struct d2_tok **tok2);
-void __d2_push_tok(struct d2_exp *exp, struct d2_tok *tok);
-void __d2_appand_postfix(struct d2_exp *exp, struct d2_tok *tok);
-#ifdef __cplusplus
-}
-#endif
 
 void __d2_print_prefix(struct d2_exp *exp)
 {

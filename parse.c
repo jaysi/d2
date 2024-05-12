@@ -1,6 +1,6 @@
-#include "d2.h"
+#include "include/d2.h"
+#include "include/dmsg.h"
 #include "error13.h"
-#include "dmsg.h"
 
 #define dm_exp1(fmt, ...)
 #define dm_print_tok(fmt, ...)

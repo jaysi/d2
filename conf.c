@@ -1,5 +1,4 @@
 #include "include/conf.h"
-
 #include "error13.h"
 
 struct d2_conf def_conf = {

@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <errno.h>
 #include "lib13.h"
-#include "token.h"
-#include "d2.h"
-#include "limmit.h"
-#include "dmsg.h"
+#include "include/token.h"
+#include "include/d2.h"
+#include "include/limmit.h"
+#include "include/dmsg.h"
+#include "include/sdmem.h"
+#include "include/var.h"
 
 /*
 
@@ -46,25 +48,6 @@ int main() {
 #define _dm_comb(fmt, ...)
 #define _dm_flatz(fmt, ...)
 #define dm_sci(fmt, ...)
-#ifdef __cplusplus
-extern "C" {
-#endif
-//define mem/alltok_list_first = NULL;e
-	e13_t __d2_skip_tok(struct d2_ctx *ctx, struct d2_tok *tok);
-	e13_t __d2_realloc_tok_buf(struct d2_tok *tok, char *data,
-				   size_t datasize, int free_old_data);
-	struct d2_tok *__d2_enumset_tok_buf(struct d2_ctx *ctx, char *data,
-						size_t datasize);
-	e13_t __d2_alloc_tok_databuf_pool(struct d2_ctx *ctx, size_t bufsize);
-	e13_t __d2_alloc_tok_list(struct d2_ctx *ctx, size_t ntok);
-	e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf);
-	e13_t __d2_free_unused_tok_list(struct d2_ctx* ctx, struct d2_tok* last_tok);//this is vital, terminate unused tokens
-	size_t __d2_get_tok_databuf_poolsize(char *buf, size_t ntok);
-	e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val);
-	e13_t __d2_strtold(char* data, fnum_t* val);
-#ifdef __cplusplus
-}
-#endif
 /*
 	source code shape:
 	block;

@@ -1,8 +1,9 @@
 #include <string.h>
 
 #include "error13.h"
-#include "d2.h"
-#include "dmsg.h"
+#include "include/d2.h"
+#include "include/dmsg.h"
+#include "include/var.h"
 
 #define dm_var1 _dm
 #define dm_var2 _dm_flat

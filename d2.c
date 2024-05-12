@@ -3,6 +3,7 @@
 #include "include/d2.h"
 #include "include/lock.h"
 #include "include/conf.h"
+#include "include/if.h"
 #include "lib13.h"
 
 #undef TEST_TOKENIZE
@@ -10,8 +11,6 @@
 #ifdef TEST_TOKENIZE
 extern int test_tokenize();
 #endif
-
-extern void d2_console_if(struct d2_handle *h);
 
 e13_t d2_init_handle(struct d2_handle *h, FILE * fin, FILE * fout, FILE * ferr)
 {

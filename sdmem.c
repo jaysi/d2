@@ -1,7 +1,7 @@
 //static - dynamic memmory manager for allocating many small objects in a single buffer
 #include "error13.h"
-#include "d2.h"
-#include "token.h"
+#include "include/d2.h"
+#include "include/token.h"
 
 struct sdmem_node {
 	size_t size;
@@ -248,7 +248,6 @@ e13_t __d2_add_ret(struct d2_ctx *ctx, struct d2_exp *exp)
 
 	return __d2_copy_tok(&(ret->tok), exp->stack_top);
 }
-
 
 e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok)
 {

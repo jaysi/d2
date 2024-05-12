@@ -261,11 +261,7 @@ extern "C" {
 			 char pack2);
 	size_t __d2_estimate_ntokens(char *start, char delim[], char esc,
 				     char pack1, char pack2);
-/*
-e13_t d2_tokenize(struct d2_handle* h);
-e13_t d2_lexer;
-e13_t d2_parse;
-*/
+    int __d2_tok_preced(d2_tok_enum code);                     
 #define d2_tok(exp) MACRO( __d2_token(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2) )
 #define d2_ntok(exp) MACRO( __d2_count_token(exp, d2_delimlist, d2_escape, d2_pack1, d2_pack2) )
 #ifdef __cplusplus

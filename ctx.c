@@ -1,30 +1,16 @@
 #include <string.h>
 #include <ctype.h>
 #include "error13.h"
-#include "d2.h"
-#include "lock.h"
-#include "dmsg.h"
+#include "include/d2.h"
+#include "include/lock.h"
+#include "include/dmsg.h"
+#include "include/sdmem.h"
+#include "include/var.h"
 
 #define __dm_run_ctx(fmt, ...)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-	e13_t d2_tokenize(struct d2_ctx *ctx);
-	e13_t d2_combine(struct d2_ctx *ctx);
-	e13_t d2_lex(struct d2_tok *tok);
-	struct d2_tok *d2_blockize(struct d2_tok *first);
-	e13_t d2_expize(struct d2_ctx *ctx, struct d2_exp *parent);
-	e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
-	e13_t d2_infix2prefix(struct d2_exp *exp);
-
-	e13_t __d2_delete_tok_list(struct d2_ctx *ctx, int free_databuf);
-#ifdef __cplusplus
-}
-#endif
 //do not forget unlock on successful return
-    e13_t d2_get_ctx(struct d2_handle *h, char *name, struct d2_ctx **ctx)
+e13_t d2_get_ctx(struct d2_handle *h, char *name, struct d2_ctx **ctx)
 {
 
 	d2_lock_ctx(h);

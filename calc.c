@@ -1,20 +1,14 @@
 #include "error13.h"
-#include "d2.h"
-#include "dmsg.h"
+#include "include/d2.h"
+#include "include/dmsg.h"
+#include "include/var.h"
+#include "include/sdmem.h"
 #include <errno.h>
 
 //TODO: temporary, replace
 #define d2_perr(handle, fmt, ...)	fprintf(stderr, fmt, __VA_ARGS__)
 #define __dm_calc _dm
 #define __dm_enum(fmt, ...)
-
-extern e13_t __d2_add_ret(struct d2_ctx *ctx, struct d2_exp *exp);
-extern e13_t __d2_pop_tok(struct d2_exp *exp, struct d2_tok **tok);
-extern e13_t __d2_pop_2tok(struct d2_exp *exp, struct d2_tok **tok1,
-			   struct d2_tok **tok2);
-extern void __d2_push_tok(struct d2_exp *exp, struct d2_tok *tok);
-e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val);
-e13_t d2_assign_var(struct d2_ctx *ctx, struct d2_tok *tok, struct d2_tok* tok1);
 
 e13_t __d2_strtold(char* data, fnum_t* val){
 	/*

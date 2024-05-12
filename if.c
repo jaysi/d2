@@ -1,8 +1,9 @@
 #include <string.h>
 #include <ctype.h>
-#include "d2.h"
-#include "if.h"
-#include "lock.h"
+#include "include/d2.h"
+#include "include/var.h"
+#include "include/if.h"
+#include "include/lock.h"
 
 #undef TEST_TOKENIZE
 
@@ -10,35 +11,8 @@
 #define D2_COMPILE_FLAGS "Debug"
 #else
 #define D2_COMPILE_FLAGS "Release"
-#endif
+#endif    
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-	e13_t d2_init_ctx(struct d2_handle *h, struct d2_ctx *ctx, char *buf,
-			  size_t bufsize, char flags);
-	e13_t d2_rm_ctx(struct d2_handle *h, char *name);
-	e13_t d2_find_ctx(struct d2_handle *h, char *name);
-	e13_t d2_new_ctx(struct d2_handle *h, char *name);
-	e13_t d2_set_ctx_buf(struct d2_handle *h, char *name, char *buf,
-			     size_t bufsize, char flags);
-	e13_t d2_rst_ctx(struct d2_handle *h, char *name);
-	e13_t d2_run_ctx(struct d2_handle *h, char *name);
-
-	struct d2_tok *d2_blockize(struct d2_tok *first);
-	e13_t d2_tokenize(char *buf, size_t bufsize,
-			  struct d2_tok **toklist_first, size_t *ntok);
-	e13_t d2_combine(struct d2_tok *toklist_first);
-	e13_t d2_lex(struct d2_tok *tok);
-	e13_t d2_expize(struct d2_ctx *ctx, struct d2_exp *parent);
-	e13_t d2_infix2prefix(struct d2_exp *exp);
-	e13_t d2_run_pre(struct d2_ctx *ctx, struct d2_exp *exp);
-    e13_t d2_var_val(struct d2_ctx *ctx, char *name, long double *val);
-
-#ifdef __cplusplus
-}
-#endif
 e13_t d2_init_if(struct d2_handle *h, FILE * fin, FILE * fout)
 {
 	h->fin = fin;
@@ -73,7 +47,7 @@ void d2_print_console_help(struct d2_handle *h)
 	d2_print(h, "%s", "u <name>\t\trun context\n");
 	d2_print(h, "%s", "p <name>\t\tprint context results\n");
 	d2_print(h, "%s", "b <name>\t\tprint context buffer\n");
-  d2_print(h, "%s", "' \t\t\tbuffered input mode\n");
+    d2_print(h, "%s", "' \t\t\tbuffered input mode\n");
 	d2_print(h, "%s", "q\t\t\tquit\n");
 
 }
@@ -96,7 +70,7 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 {
 	struct d2_var *var;
 	struct d2_ret *ret;
-    //fnum_t val;
+    fnum_t val;
 	d2_lock_ctx(h);
 	struct d2_ctx *ctx = h->ctxlist_first;
 	while (ctx) {
@@ -134,8 +108,8 @@ void __d2_print_ctx(struct d2_handle *h, char *arg1)
 			var = ctx->var_list_first;
 			d2_print(h, "%s\n", "var{");
 			while (var) {
-				d2_print(h, "\t%s -> %Lf\n", var->name,
-					 var->val);
+                d2_var_val(ctx, var->name, &val);
+				d2_print(h, "\t%s -> %Lf\n", var->name, val);
 				var = var->next;
 			}
 			d2_print(h, "%s\n", "}var;");
